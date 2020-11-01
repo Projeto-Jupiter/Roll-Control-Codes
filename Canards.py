@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from rocketpy import Function
-from mpl_toolkits.mplot3d import Axes3D
 
 df = pd.read_csv(r'Lift coeff completo.csv')
 
@@ -13,7 +12,7 @@ rho = 1.09
 
 # Desired Parameters
 timeMax = 3
-thetaDotMax = 9 #given in radians per second
+thetaDotMax = 36 #given in radians per second
 thetaDotDotMax = (0 - thetaDotMax)/timeMax
 
 # Europa
@@ -21,21 +20,34 @@ J = 0.077
 r = 127/2000
 
 # Fin set
-N = 4
-root = 100 / 1000
-tip = 20 / 1000
-span = 90 / 1000
-delta = 3
+N = 3
+root = 77 / 1000
+tip = 47 / 1000
+span = 104 / 1000
+delta = 2 # Angulo de ataque para as aletas
 
 # Canards set 
 n = 4
 Cr = 40 / 1000
-Ct = 40 / 1000
-s = 60 / 1000
-arm = 10/1000
-alfa = 11
+Ct = 40 / 1000 #O tip é do tamanho do root para aproveitar que quanto mais longe do foguete, maior é o braço do momento
+s = 80 / 1000
+arm = 10/1000 # Braço entre a aleta e a fuselagem
+alfa = 11 # angulo de ataque máximo para as canards
 
 class Canards:
+    '''
+    N = numero de aletas
+    Root = Root chordd
+    Tip = Tip Chord
+    Span = Span da aleta
+    radius = raio do fouguete
+    arm = o braço da aleta
+    Aref = área de referência do foguete
+    Afins = área das aletas (ou canards)
+    AR = razão de aspecto
+    gamac = algum ângulo calcualdo com o OPK
+    YtFins = centro de pressão das aletas
+    '''
     def __init__(self, N, root, tip, span, radius, arm=0):
         self.N = N
         self.root = root
@@ -50,11 +62,12 @@ class Canards:
         self.YtFins = (radius + span/3 * ((root + 2 * tip) / (root + tip))) # it is the Fin's center of pressure location
 
     def setCnalfa0(self, data):
-        '''data must be a pandas dataframe'''
+        '''data must be a pandas dataframe
+        Retirado da tabela, propriedades de lift do aerofólio'''
         data.dropna(inplace = True)
         self.Cnalfa0 = data
 
-class Compare(Canards):
+class Compare:
     def __init__(self, canard1, canard2):
         self.canard1 = canard1
         self.canard2 = canard2
@@ -64,7 +77,7 @@ class Compare(Canards):
         return canard.N/2 * cnalfa0 * FD * (canard.Afins/canard.Aref) * np.cos(canard.gamac) / (2 + FD * ( 1 + (4/FD**2) )**0.5) 
 
     def plot_coeff_curves(self, speed = 0.10, mode = 'lift'):
-        if speed % 0.10 == 0:
+        if (10 * speed) % 1 == 0:
             Airfoil1 = np.array(self.canard1.Cnalfa0["M=" + str(speed) + str(0)])
             Airfoil2 = np.array(self.canard2.Cnalfa0["M=" + str(speed) + str(0)])
         else:
@@ -100,7 +113,8 @@ class Compare(Canards):
 
     def calculateA(self, speed, stall_angle, fin_delta_angle, J, thetaDotDotMax, thetaDot0 = 0, dynamicPressure = 3.105e+04):
         '''The canards set must come before the fins set'''
-        if speed % 0.10 == 0:
+        # a condição é só para resolver busg no acesso ao dataset do pandas (M=0.10 e M=0.15, por exemplo)
+        if (10 * speed) % 1 == 0:
             Airfoil1 = np.array(self.canard1.Cnalfa0["M=" + str(speed) + str(0)])
             Airfoil2 = np.array(self.canard2.Cnalfa0["M=" + str(speed) + str(0)])
         else:
@@ -118,9 +132,10 @@ class Compare(Canards):
         
         c1 = ((self.canard1.YtFins) /  2) * (self.canard1.radius**2) * self.canard1.span
         c2 = ((self.canard1.root + 2 * self.canard1.tip) / 3) * self.canard1.radius * (self.canard1.span**2)
-        c3 = ((self.canard1.root + 3 * self.canard1.tip) / 12) * (self.canard1.span**3);
+        c3 = ((self.canard1.root + 3 * self.canard1.tip) / 12) * (self.canard1.span**3)
         trapezoidal_constant_canards = c1 + c2 + c3
 
+        # Está errado, precisa corrigir para a nova fórmula qeu encontramos
         CldCanards = self.canard1.N * cndataCanard1.differentiate(x = 1e-2, dx = 1e-3) * thetaDot0 * trapezoidal_constant_canards/ (self.canard1.Aref * self.canard1.radius * 2 * speed * 343)
         A = 100 * (ClfCanards + CldCanards)
 
@@ -129,7 +144,7 @@ class Compare(Canards):
         
         b1 = ((self.canard2.YtFins) /  2) * (self.canard2.radius**2) * self.canard2.span
         b2 = ((self.canard2.root + 2 * self.canard2.tip) / 3) * self.canard2.radius * (self.canard2.span**2)
-        b3 = ((self.canard2.root + 3 * self.canard2.tip) / 12) * (self.canard2.span**3);
+        b3 = ((self.canard2.root + 3 * self.canard2.tip) / 12) * (self.canard2.span**3)
         trapezoidal_constant_fins = b1 + b2 + b3
 
         CldFins = self.canard2.N * cndataCanard2.differentiate(x = 1e-2, dx = 1e-3) * thetaDot0 * trapezoidal_constant_fins/ (self.canard2.Aref * self.canard2.radius * 2 * speed * 343)
@@ -146,5 +161,5 @@ Fin.setCnalfa0(df)
 
 Comp = Compare(Cana, Fin)
 
-#Comp.plot_coeff_curves(mode='forcing')
-Comp.calculateA(speed=0.10, stall_angle= alfa, fin_delta_angle= delta, J=J, thetaDotDotMax = thetaDotDotMax, dynamicPressure=3.105e+04)
+#Comp.plot_coeff_curves(mode='forcing', speed=0.7)
+Comp.calculateA(speed = 0.7, stall_angle= 6, fin_delta_angle= delta, J=J, thetaDotDotMax = 0, thetaDot0=0, dynamicPressure=3.105e+04)
