@@ -27,12 +27,12 @@ span = 104 / 1000
 delta = 2 # Angulo de ataque para as aletas
 
 # Canards set 
-n = 4
-Cr = 40 / 1000
-Ct = 40 / 1000 #O tip é do tamanho do root para aproveitar que quanto mais longe do foguete, maior é o braço do momento
-s = 80 / 1000
-arm = 10/1000 # Braço entre a aleta e a fuselagem
-alfa = 11 # angulo de ataque máximo para as canards
+n = 3
+Cr = 77 / 1000
+Ct = 47 / 1000 #O tip é do tamanho do root para aproveitar que quanto mais longe do foguete, maior é o braço do momento
+s = 104 / 1000
+arm = 0/1000 # Braço entre a aleta e a fuselagem
+alfa = 2 # angulo de ataque máximo para as canards
 
 class Canards:
     '''
@@ -76,7 +76,7 @@ class Compare:
         # Check expressions 2.12 and 2.14
 
         FD = 2 * np.pi * canard.AR / (cnalfa0 * np.cos(canard.gamac))
-        return canard.N/2 * cnalfa0 * FD * (canard.Afins/canard.Aref) * np.cos(canard.gamac) / (2 + FD * ( 1 + (4/FD**2) )**0.5) 
+        return cnalfa0 * FD * (canard.Afins/canard.Aref) * np.cos(canard.gamac) / (2 + FD * ( 1 + (4/FD**2) )**0.5) 
 
     def plot_coeff_curves(self, speed = 0.10, mode = 'lift'):
         if (10 * speed) % 1 == 0:
@@ -135,7 +135,8 @@ class Compare:
         cndataCanard2 = Function(dataCanard2, 'Alpha (rad)', 'Cn', interpolation='linear', extrapolation = 'natural')
 
         # Calculate the canards lift coefficient - formula 2.28
-        ClfCanards = 2 * self.canard1.YtFins * self.calculate_cnalfaT(float(Airfoil1[2 * stall_angle]), self.canard1) / (2 * self.canard1.radius) 
+        ClfCanards = 2 * self.canard1.YtFins * self.calculate_cnalfaT(float(Airfoil1[2 * stall_angle]), self.canard1) / (2 * self.canard1.radius)
+        #ClfCanards = 2 * self.canard1.YtFins * cndataCanard1.differentiate(x = 1e-2, dx = 1e-1) / (2 * self.canard1.radius) 
         
         # Calculation of constants for the damping coefficient - formula 2.32
         c1 = ((self.canard1.YtFins) /  2) * (self.canard1.radius**2) * self.canard1.span
@@ -144,7 +145,11 @@ class Compare:
         trapezoidal_constant_canards = c1 + c2 + c3
 
         # Está errado, precisa corrigir para a nova fórmula qeu encontramos
-        CldCanards = self.canard1.N * cn0dataCanard1.differentiate(x = 1e-2, dx = 1e-3) * thetaDot0 * trapezoidal_constant_canards/ (self.canard1.Aref * self.canard1.radius * 2 * speed * 343)
+        thetaDot0 = 1
+        CldCanards = self.canard1.N * cn0dataCanard1.differentiate(x = 1e-2, dx = 1e-1) * thetaDot0 * trapezoidal_constant_canards/ (self.canard1.Aref * self.canard1.radius * 2 * speed * 343)
+        
+        print("CldC = ", CldCanards)
+        print("ClfC = ", ClfCanards)
         A = 100 * (ClfCanards + CldCanards)
 
         # Repeat the process to the Amin
@@ -171,4 +176,4 @@ Fin.setCnalfa0(df)
 Comp = Compare(Cana, Fin)
 
 #Comp.plot_coeff_curves(mode='forcing', speed=0.7)
-Comp.calculateA(speed = 0.7, stall_angle= 6, fin_delta_angle= delta, J=J, thetaDotDotMax = thetaDotDotMax, thetaDot0=0, dynamicPressure=3.105e+04)
+Comp.calculateA(speed = 0.6, stall_angle= 6, fin_delta_angle= delta, J=J, thetaDotDotMax = thetaDotDotMax, thetaDot0=0, dynamicPressure=3.105e+04)
