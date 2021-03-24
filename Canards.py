@@ -4,38 +4,7 @@ import math
 import matplotlib.pyplot as plt
 from rocketpy import Function
 
-# Note the the data must have a Step of 0.5 on the attack angle to use the plot function
-df = pd.read_csv(r'Lift coeff completo.csv')
-df2 = pd.read_csv(r'NACA0012 curva Completa.csv')
 
-df.dropna(inplace = True)
-
-# Ennvironment
-rho = 1.09
-
-# Desired Parameters
-timeMax = 1
-thetaDotMax = 36 #given in radians per second
-thetaDotDotMax = (0 - thetaDotMax)/timeMax
-
-# Europa
-J = 0.061
-r = 127/2000
-
-# Fin set
-N = 3
-root = 77 / 1000
-tip = 47 / 1000
-span = 104 / 1000
-delta = 2 # Angulo de ataque para as aletas
-
-# Canards set 
-n = 3
-Cr = 40 / 1000
-Ct = 40 / 1000 #O tip é do tamanho do root para aproveitar que quanto mais longe do foguete, maior é o braço do momento
-s = 70 / 1000
-arm = 5/1000 # Braço entre a aleta e a fuselagem
-alfa = 7 # angulo de ataque máximo para as canards
 
 class Canards:
     '''
@@ -95,9 +64,9 @@ class Compare:
             angles1 = [ i/2 for i in range(len(Airfoil1)) ]
 
             # Generate a list with the CNt (total normal force coefficient). Note that it is already multiplied by the canard angle
-            dataCanard1 = [ self.canard1.N * self.calculate_cnalfa1(float(Airfoil1[i]), self.canard1) for i in range(len(Airfoil1)) ]
+            dataCanard1 = [ 2 * self.calculate_cnalfa1(float(Airfoil1[i]), self.canard1) for i in range(len(Airfoil1)) ] # The 2 in the calculation comes from formula 2.13 when considering the wind flow hitting the cannards perpendicularly
             angles2 = [ i/2 for i in range(len(Airfoil2)) ]
-            dataCanard2 = [ self.canard2.N * self.calculate_cnalfa1(float(Airfoil2[i]), self.canard2) for i in range(len(Airfoil2)) ]
+            dataCanard2 = [ (self.canard2.N/2) * self.calculate_cnalfa1(float(Airfoil2[i]), self.canard2) for i in range(len(Airfoil2)) ]
 
 
             plt.plot(angles1, dataCanard1 , angles2, dataCanard2)
@@ -109,9 +78,9 @@ class Compare:
         if mode == 'forcing':
             # Aplies number of fins to lift coefficient data
             angles1 = [ i/2 for i in range(len(Airfoil1)) ]
-            dataCanard1 = [ self.canard1.YtFins * self.canard1.N * self.calculate_cnalfa1(float(Airfoil1[i]), self.canard1) / (2 * self.canard2.radius) for i in range(len(Airfoil1)) ]
+            dataCanard1 = [ self.canard1.YtFins * self.canard1.N * self.calculate_cnalfa1(float(Airfoil1[i]), self.canard1) / (2 * self.canard1.radius) for i in range(len(Airfoil1)) ]
             angles2 = [ i/2 for i in range(len(Airfoil2)) ]
-            dataCanard2 = [ self.canard2.YtFins * self.canard.N * self.calculate_cnalfa1(float(Airfoil2[i]), self.canard2) / (2 * self.canard2.radius) for i in range(len(Airfoil2)) ]
+            dataCanard2 = [ self.canard2.YtFins * self.canard2.N * self.calculate_cnalfa1(float(Airfoil2[i]), self.canard2) / (2 * self.canard2.radius) for i in range(len(Airfoil2)) ]
             
 
             plt.plot(angles1, dataCanard1 , angles2, dataCanard2)
@@ -120,7 +89,7 @@ class Compare:
             plt.ylabel('Clf')
             plt.show()
 
-    def calculateA(self, speed, stall_angle, fin_delta_angle, J, thetaDotDotMax, thetaDot0 = 0, dynamicPressure = 3.105e+04):
+    def calculateA(self, speed, stall_angle, fin_delta_angle, J, thetaDotDotMax, thetaDot0 = 0, DynamicPressure = 101325):
         '''The canards set must come before the fins set'''
 
         print('---------------------------------------------------------------------')
@@ -188,11 +157,48 @@ class Compare:
         print("CldA Derivative with Omega at given speed = {:.3f}".format(CldFinsDerivative))
         
 
-        Amin = 100 * (-J * thetaDotDotMax / (dynamicPressure * self.canard2.Aref * 2 * self.canard2.radius) + ClfFins - CldFins)
+        Amin = 100 * ( -((J * thetaDotDotMax) / (DynamicPressure * self.canard2.Aref * 2 * self.canard2.radius)) + ClfFins - CldFins)
 
         print()
         print("A = {:.2f}".format(A))
         print("Amin = {:.2f}".format(Amin))
+
+
+# Note the the data must have a Step of 0.5 on the attack angle to use the plot function
+df = pd.read_csv(r'Lift coeff completo.csv')
+df2 = pd.read_csv(r'NACA0012 curva Completa.csv')
+
+df.dropna(inplace = True)
+
+
+# Panda
+J = 0.007
+r = 80/2000
+
+# Fin set
+N = 3
+root = 85 / 1000
+tip = 33.5 / 1000
+span = 76.5 / 1000
+delta = 2 # Angulo de ataque para as aletas
+
+# Canards set 
+n = 2
+Cr = 40 / 1000
+Ct = 20 / 1000 #O tip é do tamanho do root para aproveitar que quanto mais longe do foguete, maior é o braço do momento
+s = 40 / 1000
+arm = 5/1000 # Braço entre a aleta e a fuselagem
+alfa = 7 # angulo de ataque máximo para as canards
+
+# Calculating Dynamic Pressure
+speed = 0.1 # speed of the rocket in Mach number
+rho = 1.06 # air density
+DynamicPressure = (343 * speed)**2 * rho/2
+
+# Desired Parameters
+timeMax = 3
+thetaDotMax = 12 #given in radians per second
+thetaDotDotMax = (0 - thetaDotMax)/timeMax
 
 Cana = Canards(n, Cr, Ct, s, r, arm)
 Cana.setCN0(df2)
@@ -202,4 +208,4 @@ Fin.setCN0(df2)
 Comp = Compare(Cana, Fin)
 
 #Comp.plot_coeff_curves(mode='forcing', speed=0.7)
-Comp.calculateA(speed = 0.6, stall_angle= alfa, fin_delta_angle= delta, J=J, thetaDotDotMax = thetaDotDotMax, thetaDot0=0, dynamicPressure=3.105e+04)
+Comp.calculateA(speed = speed, stall_angle= alfa, fin_delta_angle= delta, J=J, thetaDotDotMax = thetaDotDotMax, thetaDot0 =thetaDotMax, DynamicPressure=DynamicPressure)
