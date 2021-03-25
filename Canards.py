@@ -266,7 +266,3 @@ Comp = Compare(Cana, Fin)
 #Comp.plot_coeff_curves(mode='forcing', speed=0.7)
 #Comp.calculateA(speed = speed, stall_angle= alfa, fin_delta_angle= delta, J=J, thetaDotDotMax = thetaDotDotMax, thetaDot0 =thetaDotMax, DynamicPressure=DynamicPressure, compare = True, speedMin = 0.1, speedMax = 0.4, tempo = 3)
 Comp.torque(speed = 0.4, XCgFins = 21.425/1000, stall_angle = alfa, Cr = Cr, span = s, Ct = Ct, X_f = X_f, X_t = X_t, rho = 1.06)
-
-
-    
-
