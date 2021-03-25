@@ -189,11 +189,11 @@ class Compare:
             plt.show()
 
         return [A, Amin, speed]
-    def torque(self, speed, XCgFins, stall_angle, rho = 1.06):
+    def torque(self, speed, XCgFins, stall_angle, Cr, span, Ct, X_f, X_t, rho = 1.06):
         # Condition to find the index at the panda dataset
         Airfoil1 = np.array(self.canard1.CN0)
         stall_angle = stall_angle * math.pi / 180
-        speed *= 343
+        speed = speed*343
 
         data0Canard1 = [ [float(Airfoil1[i][0]), float(Airfoil1[i][1])] for i in range(len(Airfoil1)) ]
 
@@ -212,11 +212,11 @@ class Compare:
         # Damping force was disconsidered since it reduces the applied torque
         MaxNormalForce = MaxClfCanards * (1/2) * rho * speed**2 * self.canard1.Aref
 
-        XFins = 
+        XFins = X_f + (X_t / 3) * ( (Cr + 2*Ct) / (Cr + Ct) ) + (1/6) * (Cr + Ct - (Cr * Ct) / (Cr + Ct))
 
         MaxTorque = MaxNormalForce * (XFins - XCgFins)
 
-        print("Applied torque = {:.3f} Nm").format(MaxTorque)
+        print("Applied torque = {:.3f} Nm".format(MaxTorque))
 
 # Note the the data must have a Step of 0.5 on the attack angle to use the plot function
 df = pd.read_csv(r'Lift coeff completo.csv')
@@ -243,6 +243,8 @@ Ct = 20 / 1000 #O tip é do tamanho do root para aproveitar que quanto mais long
 s = 40 / 1000
 arm = 5/1000 # Braço entre a aleta e a fuselagem
 alfa = 7 # angulo de ataque máximo para as canards
+X_f = 761.6/1000 # Distance from nose tip to fin root chord leading edge
+X_t = 20/1000 # Distance between fin root leading edge and fin tip leading edge parallel to body
 
 # Calculating Dynamic Pressure
 speed = 0.6 # speed of the rocket in Mach number
@@ -263,7 +265,7 @@ Comp = Compare(Cana, Fin)
 
 #Comp.plot_coeff_curves(mode='forcing', speed=0.7)
 #Comp.calculateA(speed = speed, stall_angle= alfa, fin_delta_angle= delta, J=J, thetaDotDotMax = thetaDotDotMax, thetaDot0 =thetaDotMax, DynamicPressure=DynamicPressure, compare = True, speedMin = 0.1, speedMax = 0.4, tempo = 3)
-Comp.torque(speed = 0.4, XCgFins = 21.425/1000, stall_angle = alfa, rho = 1.06)
+Comp.torque(speed = 0.4, XCgFins = 21.425/1000, stall_angle = alfa, Cr = Cr, span = s, Ct = Ct, X_f = X_f, X_t = X_t, rho = 1.06)
 
 
     
