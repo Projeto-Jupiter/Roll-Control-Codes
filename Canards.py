@@ -89,7 +89,7 @@ class Compare:
             plt.ylabel('Clf')
             plt.show()
 
-    def calculateA(self, speed, stall_angle, fin_delta_angle, J, thetaDotDotMax, thetaDot0 = 0, DynamicPressure = 101325):
+    def calculateA(self, speed, stall_angle, fin_delta_angle, J, thetaDotDotMax, thetaDot0 = 0, DynamicPressure = 101325, compare = False, speedMin = 0.1, speedMax = 0.8, passo = 0.1, tempo = 3):
         '''The canards set must come before the fins set'''
 
         print('---------------------------------------------------------------------')
@@ -163,6 +163,60 @@ class Compare:
         print("A = {:.2f}".format(A))
         print("Amin = {:.2f}".format(Amin))
 
+        if compare:
+            LA = []
+            LAmin = []
+            LSpeed = []
+            
+            V = speedMin
+
+            while V <= speedMax:
+                DynamicPressure = (343 * V)**2 * rho/2
+                omega = self.canard2.Aref * np.sqrt(abs(1-V)) * self.canard2.YtFins * cndataCanard2(fin_delta_angle) * V * 343 / ( 2 * np.pi * trapezoidal_constant_fins)
+                temp = self.calculateA(V, stall_angle * 180 / np.pi, fin_delta_angle * 180 / np.pi, J, omega / tempo, omega, DynamicPressure)
+                LA.append(temp[0])
+                LAmin.append(temp[1])
+                LSpeed.append(temp[2])
+                V += passo
+                
+
+            plt.plot(LSpeed, LA, label = "A")
+            plt.plot(LSpeed, LAmin, label = "Amin")
+            plt.title('A vs Amin')
+            plt.xlabel('Speed')
+            plt.ylabel('A/Amin')
+            plt.legend()
+            plt.show()
+
+        return [A, Amin, speed]
+    def torque(self, speed, XCgFins, stall_angle, Cr, span, Ct, X_f, X_t, rho = 1.06):
+        # Condition to find the index at the panda dataset
+        Airfoil1 = np.array(self.canard1.CN0)
+        stall_angle = stall_angle * math.pi / 180
+        speed = speed*343
+
+        data0Canard1 = [ [float(Airfoil1[i][0]), float(Airfoil1[i][1])] for i in range(len(Airfoil1)) ]
+
+        # Generates the CN0 as a Function object
+        cn0dataCanard1 = Function(data0Canard1, 'Alpha (rad)', 'Cn', interpolation='linear', extrapolation = 'natural') # Cnalfa1 for each canard set
+
+        # Map the cnalfa1 for the 3d fin, taking as base the CN0 of the airfoil and the fin parameters
+        dataCanard1 = [ [Airfoil1[i][0], self.calculate_cnalfa1(float(Airfoil1[i][1]), self.canard1)] for i in range(len(Airfoil1)) ]
+
+        # Converts lift coefficient data to a Function object
+        cndataCanard1 = Function(dataCanard1, 'Alpha (rad)', 'Cn', interpolation='linear', extrapolation = 'natural') # Cnalfa1 for each canard set
+
+        # Calculate the canards lift coefficient - formula 2.28
+        MaxClfCanards = self.canard1.N * self.canard1.YtFins * cndataCanard1(stall_angle) / (2 * self.canard1.radius)
+
+        # Damping force was disconsidered since it reduces the applied torque
+        MaxNormalForce = MaxClfCanards * (1/2) * rho * speed**2 * self.canard1.Aref
+
+        XFins = X_f + (X_t / 3) * ( (Cr + 2*Ct) / (Cr + Ct) ) + (1/6) * (Cr + Ct - (Cr * Ct) / (Cr + Ct))
+
+        MaxTorque = MaxNormalForce * (XFins - XCgFins)
+
+        print("Applied torque = {:.3f} Nm".format(MaxTorque))
 
 # Note the the data must have a Step of 0.5 on the attack angle to use the plot function
 df = pd.read_csv(r'Lift coeff completo.csv')
@@ -189,9 +243,11 @@ Ct = 20 / 1000 #O tip é do tamanho do root para aproveitar que quanto mais long
 s = 40 / 1000
 arm = 5/1000 # Braço entre a aleta e a fuselagem
 alfa = 7 # angulo de ataque máximo para as canards
+X_f = 761.6/1000 # Distance from nose tip to fin root chord leading edge
+X_t = 20/1000 # Distance between fin root leading edge and fin tip leading edge parallel to body
 
 # Calculating Dynamic Pressure
-speed = 0.1 # speed of the rocket in Mach number
+speed = 0.6 # speed of the rocket in Mach number
 rho = 1.06 # air density
 DynamicPressure = (343 * speed)**2 * rho/2
 
@@ -208,4 +264,5 @@ Fin.setCN0(df2)
 Comp = Compare(Cana, Fin)
 
 #Comp.plot_coeff_curves(mode='forcing', speed=0.7)
-Comp.calculateA(speed = speed, stall_angle= alfa, fin_delta_angle= delta, J=J, thetaDotDotMax = thetaDotDotMax, thetaDot0 =thetaDotMax, DynamicPressure=DynamicPressure)
+#Comp.calculateA(speed = speed, stall_angle= alfa, fin_delta_angle= delta, J=J, thetaDotDotMax = thetaDotDotMax, thetaDot0 =thetaDotMax, DynamicPressure=DynamicPressure, compare = True, speedMin = 0.1, speedMax = 0.4, tempo = 3)
+Comp.torque(speed = 0.4, XCgFins = 21.425/1000, stall_angle = alfa, Cr = Cr, span = s, Ct = Ct, X_f = X_f, X_t = X_t, rho = 1.06)
