@@ -129,7 +129,7 @@ class Data:
             Y = self.getValue(X)
 
             plt.figure(figsize=(8.09016994375, 5))
-            plt.plot(X, Y, dataB.X, dataB.Y)
+            plt.plot(X, Y, dataB.__X_source__, dataB.getValue(dataB.__X_source__))
             plt.xlabel(self.__X_source_label__, fontsize=14)
             plt.ylabel(self.__Y_source_label__, fontsize=14)
             plt.title(title, fontsize=16)
@@ -137,7 +137,7 @@ class Data:
             plt.yticks(fontsize = 12)
             plt.xscale(xscale)
             plt.yscale(yscale)
-            plt.grid()
+            plt.grid(True)
             if self.name: plt.legend([self.name, dataB.name])
 
             if type(export) == bool:
