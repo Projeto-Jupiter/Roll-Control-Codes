@@ -1,9 +1,9 @@
-#include<Wire.h>//Biblioteca para comunicação I2C
-#include<MPU6050.h>
+#include<Wire.h> //Biblioteca para comunicação I2C
+#include<MPU6050.h> // Biblioteca para uso do sensor
 #include <Servo.h>
-#include <PID_v1.h>
-#include <SD.h>
-#include <SPI.h>
+#include <PID_v1.h> // Biblioteca com a implementação do controlador PID
+#include <SD.h> // Biblioteca para escrever no SD
+#include <SPI.h> // Biblioteca para escrever no SD
 
 // Defining filter function. Low pass chebyshev filter order=2 alpha1=0.445
 class FilterChLp2
@@ -44,24 +44,19 @@ double dado_filtrado;
 FilterChLp2 filtro;
 
 // inicializa variaveis do controlador
-double Setpoint, Output; // Variables of interest
+double Setpoint, Output, ServoOutput, K_convertion; // Variables of interest
 double Kp = 0.015, Ki = 0.315, Kd = 0;
 PID myPID(&dado_filtrado, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 // Inicializando cartão SD
 File myFileSD;
-const char* file_name = "TesteCasa7.txt";
+const char* file_name = "TesteCave_0704.txt";
 const int chipSelect = BUILTIN_SDCARD;
 
-
 // ===========================================================================================================
-
 void setup() {
   //Inicia a comunicaçao serial (para exibir os valores lidos)
-  Serial.begin(115200);
-  while (!Serial) {
-    ; // wait for serial port to connect.
-  }
+  Serial.begin(250000);
 
   Wire.begin(); //Inicia a comunicação I2C
   Wire.beginTransmission(MPU_addr); //Começa a transmissao de dados para o sensor
@@ -100,7 +95,7 @@ void setup() {
   Setpoint = 0; // Velocidade angular desejada
   myPID.SetMode(AUTOMATIC); //turn the PID on
   myPID.SetOutputLimits(-8, 8);
-  myPID.SetSampleTime(10);
+  // myPID.SetSampleTime(10); // The sample time is being manually controlled on the loop 
 
   // supply your own gyro offsets here, scaled for min sensitivity
   mpu.setXAccelOffset(-411);
@@ -139,7 +134,6 @@ void setup() {
 
 
 // ===========================================================================================================
-
 // Para Debugagem
 unsigned long inicio = 0; // <-------------------
 unsigned long fim = 0; // <-------------------
@@ -182,12 +176,16 @@ void loop() {
     //  float dado_filtrado = filter.addData(GyZ);
     dado_filtrado = filtro.addData(GyZ);
     myPID.Compute();
-    myservo.write(10 * Output + 90); // Output ampliado em 10x
+
+    // Convert canard output to servo output
+    ServoOutput = K_convertion * Output + 90;
+
+    // Write output on the servp
+    myservo.write(ServoOutput); // Output ampliado em 10x
 
     fim = micros(); // <-------------------
     Serial.print("Tempo lendo dados: "); // <-------------------
     Serial.println(fim - inicio); // <-------------------
-
 
     inicio = micros(); // <-------------------
 
