@@ -42,9 +42,12 @@ double dado_filtrado;
 FilterChLp2 filtro;
 
 // inicializa variaveis do controlador
-double Setpoint, Output, ServoOutput, K_convertion = 10; // Variables of interest
+double Setpoint, Output, ServoOutput, K_convertion = 1.62; // Variables of interest
 double Kp = 0.015, Ki = 0.315, Kd = 0;
 PID myPID(&dado_filtrado, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+
+// Enable
+int Enable_eletronica = 0;
 
 // ===========================================================================================================
 void setup() {
@@ -142,13 +145,21 @@ void loop() {
 
     //  float dado_filtrado = filter.addData(GyZ);
     dado_filtrado = filtro.addData(GyZ);
-    myPID.Compute();
 
-    // Convert canard output to servo output
-    ServoOutput = K_convertion * Output + 90;
+    if (Enable_eletronica == 1) {
+      myPID.Compute();
 
-    // Write output on the servp
-    myservo.write(ServoOutput); // Output ampliado em 10x
+      // Convert canard output to servo output
+      ServoOutput = K_convertion * Output + 90;
+  
+      // Write output on the servp
+      myservo.write(ServoOutput); // Output
+    }
+
+    else {
+      myservo.write(90);
+      // Adicionar rotina que verifica o enable
+    }
 
     fim = micros(); // <-------------------
     Serial.print("Tempo lendo dados: "); // <-------------------
