@@ -52,7 +52,7 @@ int Enable_eletronica = 0;
 // ===========================================================================================================
 void setup() {
   //Inicia a comunicaçao serial (para exibir os valores lidos)
-  Serial.begin(250000);
+  Serial.begin(9600);
 
   Wire.begin(); //Inicia a comunicação I2C
   Wire.beginTransmission(MPU_addr); //Começa a transmissao de dados para o sensor
@@ -100,6 +100,12 @@ void setup() {
   mpu.setXGyroOffset(-35);
   mpu.setYGyroOffset(282);
   mpu.setZGyroOffset(-17);
+
+  myservo.write(86);
+  delay(300);
+  myservo.write(94);
+  delay(300);
+  myservo.write(90);
 }
 
 
@@ -110,13 +116,15 @@ unsigned long fim = 0; // <-------------------
 
 // Gerenciamento de tepo
 unsigned long intervalo_de_obtencao_e_filtragem_de_dados = 100000; // Em microssegundos
+unsigned long intervalo_de_salvamento_de_dados = 4000000; // Em microssegundos
 unsigned long micros_atual = 0;
-unsigned long micros_anterior = 0;
+unsigned long micros_anterior_obtencao_e_filtragem = 0;
+unsigned long micros_anterior_salvamento_de_dados = 0;
 
 void loop() {
 
   micros_atual = micros();
-  if ((micros_atual - micros_anterior) >= intervalo_de_obtencao_e_filtragem_de_dados ) {
+  if ((micros_atual - micros_anterior_obtencao_e_filtragem) >= intervalo_de_obtencao_e_filtragem_de_dados ) {
     micros_anterior = micros_atual;
     Serial.print("micros_atual: ");
     Serial.println(micros_atual);
@@ -161,6 +169,12 @@ void loop() {
       // Adicionar rotina que verifica o enable
     }
 
+    if ((micros_atual - micros_anterior_salvamento_de_dados) >= intervalo_de_salvamento_de_dados ){
+      ServoOutput = 100*ServoOutput; // transforma double em int
+      
+      
+    }
+
     fim = micros(); // <-------------------
     Serial.print("Tempo lendo dados: "); // <-------------------
     Serial.println(fim - inicio); // <-------------------
@@ -176,4 +190,15 @@ void loop() {
     Serial.println(fim - inicio); // <-------------------
 
   }
+}
+
+// =================================================================================================================================
+void writeIntEEPROM(int address, int number)
+{ 
+  /* writes a int into the an addres in the eeprom by converting
+   */
+  byte byte1 = number >> 8;
+  byte byte2 = number & 0xFF;
+  EEPROM.write(address, byte1);
+  EEPROM.write(address + 1, byte2);
 }
