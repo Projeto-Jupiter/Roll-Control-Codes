@@ -55,8 +55,7 @@ class LowPass
     }
 
     double addData(double x) //class II
-<<<<<<< HEAD
-    {   v[0] = v[1];
+    { v[0] = v[1];
         v[1] = v[2];
         v[2] = v[3];
         v[3] = v[4];
@@ -116,19 +115,66 @@ class LowPass
 
   private:
     double v[42];
-=======
+};
+
+class EnableFunction
+{
+  public:
+    EnableFunction()
     {
-      v[0] = v[1];
-      v[1] = v[2];
-      v[2] = (8.319393674533791527e-1 * x)
-             + (-0.73546840593695905763 * v[0])
-             + (-1.59228906387655766430 * v[1]);
-      return (v[0] + v[2]) + 2 * v[1];
+      v[0] = 0.0;
+      v[1] = 0.0;
+      v[2] = 0.0;
+      v[3] = 0.0;
+      v[4] = 0.0;
+      mean = 0.0;
+      counter = 0;
+      motorOn = 0;
     }
 
-  private:
-    double v[3];
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
+    double addAcceleration(double az)
+    {
+      mean = mean - (v[0] - az) / 5;
+      v[0] = v[1];
+      v[1] = v[2];
+      v[2] = v[3];
+      v[3] = v[4];
+      v[4] = az;
+
+      // esperando motor ligar
+      if (mean > (10.0) && motorOn == 0) // se a media for superior a 2g (significa que o motor ligou) - motor e gs tem sentidos diferentes
+      {                                                      // && motor desligado (garante primeiro estado)
+        counter++;      
+
+        if (counter >= 50) { // considera uma margem de meio segundo
+            motorOn = 1;     // liga o motor
+            counter = 0;     // reseta o counter para reciclar variaveis
+        }
+      }
+      
+      // motor ligado
+      if (motorOn == 1) {
+        counter++; // considera counter por meio segundo para evitar erros no momento que o foguete liga  
+        if (counter >= 50){
+            if (mean >= 0.0) { // se a aceleracao esta para cima (menor que 1g) controle fica desligado
+                return 0; // controle desligado;
+            }
+            else { // quando a aceleracao fica igual a 1g (motor desligou de novo) controle liga
+                return 1; // controle ligado;
+            }
+        }
+      }
+
+      else {
+          counter = 0;
+      }
+    }
+
+    private:
+    double v[5];
+    double mean;
+    int counter;
+    int motorOn;
 };
 
 // Inicializando variaveis do sensor
@@ -142,11 +188,7 @@ Servo myservo;  // create servo object to control a servo
 
 // Criando o Filtro
 double dado_filtrado;
-<<<<<<< HEAD
 LowPass filtro;
-=======
-FilterChLp2 filtro;
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
 
 // inicializa variaveis do controlador
 double Setpoint, Output, ServoOutput, K_convertion = 1.62; // Variables of interest
@@ -154,16 +196,14 @@ double Kp = 0.015, Ki = 0.315, Kd = 0;
 PID myPID(&dado_filtrado, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 // Enable
-int Enable_eletronica = 1;
+EnableFunction Ena;
+int Enable_eletronica = 0;
+int Enable_nosso = 0;
 
 // ===========================================================================================================
 void setup() {
   //Inicia a comunicaçao serial (para exibir os valores lidos)
-<<<<<<< HEAD
   Serial.begin(250000);
-=======
-  Serial.begin(9600);
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
 
   Wire.begin(); //Inicia a comunicação I2C
   Wire.beginTransmission(MPU_addr); //Começa a transmissao de dados para o sensor
@@ -196,11 +236,7 @@ void setup() {
   Wire.endTransmission();
 
   // Atribui pino ao servo
-<<<<<<< HEAD
   myservo.attach(3);  // attaches the servo on pin 9 to the servo object
-=======
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
 
   // Prepara controlador
   Setpoint = 0; // Velocidade angular desejada
@@ -216,17 +252,10 @@ void setup() {
   mpu.setYGyroOffset(282);
   mpu.setZGyroOffset(-17);
 
-<<<<<<< HEAD
   myservo.write(98);
   delay(500);
   myservo.write(82);
   delay(500);
-=======
-  myservo.write(86);
-  delay(300);
-  myservo.write(94);
-  delay(300);
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
   myservo.write(90);
 }
 
@@ -237,23 +266,14 @@ unsigned long inicio = 0; // <-------------------
 unsigned long fim = 0; // <-------------------
 
 // Gerenciamento de tempo
-<<<<<<< HEAD
 unsigned long intervalo_de_obtencao_e_filtragem_de_dados = 10000; // Em microssegundos
 unsigned long intervalo_de_salvamento_de_dados = 250000; // Em microssegundos
-=======
-unsigned long intervalo_de_obtencao_e_filtragem_de_dados = 100000; // Em microssegundos
-unsigned long intervalo_de_salvamento_de_dados = 4000000; // Em microssegundos
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
 unsigned long micros_atual = 0;
 unsigned long micros_anterior_obtencao_e_filtragem = 0;
 unsigned long micros_anterior_salvamento_de_dados = 0;
 
 // EEPROM
-<<<<<<< HEAD
 int addr = 0;
-=======
-int address = 0;
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
 int ServoOutputSaved;
 int dadoFiltradoSaved;
 
@@ -262,13 +282,8 @@ void loop() {
   micros_atual = micros();
   if ((micros_atual - micros_anterior_obtencao_e_filtragem) >= intervalo_de_obtencao_e_filtragem_de_dados ) {
     micros_anterior_obtencao_e_filtragem = micros_atual;
-<<<<<<< HEAD
 //    Serial.print("micros_atual: ");
 //    Serial.println(micros_atual);
-=======
-    Serial.print("micros_atual: ");
-    Serial.println(micros_atual);
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
 
     inicio = micros(); // <-------------------
 
@@ -295,7 +310,7 @@ void loop() {
     //  float dado_filtrado = filter.addData(GyZ);
     dado_filtrado = filtro.addData(GyZ);
 
-    if (Enable_eletronica == 1) {
+    if (Enable_eletronica == 1 || Enable_nosso == 1) {
       myPID.Compute();
 
       // Convert canard output to servo output
@@ -308,18 +323,17 @@ void loop() {
     else {
       myservo.write(90);
       // Adicionar rotina que verifica o enable
+      Enable_nosso = Ena.addAcceleration(AcZ);
+      if (digitalRead(10) == HIGH) {
+        Enable_eletronica = 1;
+      }
     }
 
-<<<<<<< HEAD
     if (addr < EEPROM.length()) {
-=======
-    if (address < EEPROM.length()) {
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
       if ((micros_atual - micros_anterior_salvamento_de_dados) >= intervalo_de_salvamento_de_dados ) {
         micros_anterior_salvamento_de_dados = micros_atual;
         
         ServoOutputSaved = 100 * ServoOutput; // double to int
-<<<<<<< HEAD
         dadoFiltradoSaved = 100 * dado_filtrado;        
 
         writeIntEEPROM(addr, dado_filtrado); // Salva dado filtrado
@@ -329,45 +343,22 @@ void loop() {
         writeIntEEPROM(addr, AcZ_raw);
         addr = addr + 2;
 //        Serial.println("Saved EEPROM");
-=======
-        dadoFiltradoSaved = 100 * dado_filtrado;
-
-        writeIntEEPROM(address, dado_filtrado); // Salva dado filtrado
-        address = address + 2; // move a pduas posições na memoria
-        writeIntEEPROM(address, ServoOutput); // Salva output para Servo
-        address = address + 2;
-        writeIntEEPROM(address, AcZ_raw);
-        Serial.println('Saved on EEPROM');
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
       }
     }
 
     fim = micros(); // <-------------------
-<<<<<<< HEAD
 //    Serial.print("Tempo lendo dados: "); // <-------------------
 //    Serial.println(fim - inicio); // <-------------------
-=======
-    Serial.print("Tempo lendo dados: "); // <-------------------
-    Serial.println(fim - inicio); // <-------------------
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
 
     inicio = micros(); // <-------------------
 
     Serial.print("GyZ = "); Serial.print(GyZ);
     Serial.print(" | GyZ filtrado = "); Serial.println(dado_filtrado);
-<<<<<<< HEAD
 //    Serial.print(" | Servo Position = "); Serial.println(ServoOutput);
 
     fim = micros(); // <-------------------
 //    Serial.print("Tempo gravando dados: "); // <-------------------
 //    Serial.println(fim - inicio); // <-------------------
-=======
-    Serial.print(" | Servo Position = "); Serial.println(ServoOutput);
-
-    fim = micros(); // <-------------------
-    Serial.print("Tempo gravando dados: "); // <-------------------
-    Serial.println(fim - inicio); // <-------------------
->>>>>>> 7f45ba2d12f6b8534902a0c24ff865f10b8e76bf
 
   }
 }
