@@ -1,10 +1,10 @@
 #include <Wire.h> //Biblioteca para comunicação I2C
 #include <MPU6050.h> // Biblioteca para uso do sensor
-#include <Servo.h>
+#include <Servo.h>  //Biblioteca para uso dos servos
 #include <PID_v1.h> // Biblioteca com a implementação do controlador PID
-#include <EEPROM.h>
-#include <LowPass.h>
-#include <EnableFunction.h>
+#include <EEPROM.h> //Biblioteca para armazenamento dos dados na memória
+#include <LowPass.h>  //Biblioteca com implementação do filtro passa-baixa
+#include <EnableFunction.h>   //Biblioteca responsável por ligar e desligar os sistemas de controle
 
 // Inicializando variaveis do sensor
 MPU6050 mpu;
@@ -80,12 +80,16 @@ void setup() {
   mpu.setXGyroOffset(-35);
   mpu.setYGyroOffset(282);
   mpu.setZGyroOffset(-17);
-
-  myservo.write(98);
-  delay(500);
-  myservo.write(82);
-  delay(500);
-  myservo.write(90);
+  
+  for (pos = 0; pos <= 45; pos += 1) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    myservo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15 ms for the servo to reach the position
+  }
+  for (pos = 45; pos >= 0; pos -= 1) { // goes from 45 degrees to 0 degrees
+    myservo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15 ms for the servo to reach the position
+  }
 }
 
 
