@@ -1,0 +1,46 @@
+#include <Wire.h>
+#include "MPU6050.h"
+#include <Adafruit_BMP280.h>
+
+//Giroscopios
+MPU6050 mpu1(0x68);
+MPU6050 mpu2(0x69);
+int16_t ax1, ay1, az1, gx1, gy1, gz1;
+int16_t ax2, ay2, az2, gx2, gy2, gz2;
+
+//Barometro
+Adafruit_BMP280 bmp;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+  
+  mpu1.initialize();
+/*   mpu1.setXAccelOffset(-411);
+  mpu1.setYAccelOffset(-645);
+  mpu1.setZAccelOffset(-1169);
+  mpu1.setXGyroOffset(-35);
+  mpu1.setYGyroOffset(282);
+  mpu1.setZGyroOffset(-17); */
+
+  mpu2.initialize();
+/*   mpu2.setXAccelOffset(-411);
+  mpu2.setYAccelOffset(-645);
+  mpu2.setZAccelOffset(-1169);
+  mpu2.setXGyroOffset(-35);
+  mpu2.setYGyroOffset(282);
+  mpu2.setZGyroOffset(-17); */
+}
+
+void loop() {
+
+  mpu1.getMotion6(&ax1, &ay1, &az1, &gx1, &gy1, &gz1);
+  mpu2.getMotion6(&ax2, &ay2, &az2, &gx2, &gy2, &gz2);
+
+  /* Serial.println(informacao) */
+
+  float pressure = bmp.readPressure();
+  float altitude = bmp.readAltitude();
+
+  /* Serial.println(informacao) */
+}
