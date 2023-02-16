@@ -2,22 +2,35 @@
 
   EnableFunction.h
   Autor: Bruno Sorban, Kaleb Ramos, Lucas Wu, Mateus Stano
-  Novembro de 2022
+  Fevereiro de 2023
  
 */
 
-#ifndef EnableFunction.h
-#define EnableFunction.h
+#ifndef ENABLEFUNCTION_H
+#define ENABLEFUNCTION_H
 
-class EnableFunction(){
-  public:
-    double addAcceleration(double az);
-    
-  private:
-    double v[5];
-    double mean;
+const int enableLenght = 100; //tbd
+const int minCounters = 50; //tbd
+
+class EnableFunction {
+public:
+    EnableFunction(double minAltitude, double apogeeAltitude);
+    ~EnableFunction();
+    void addValues(double acceleration, double measuredAltitude); 
+
+private:
+    double minAltitude;
+    double apogeeAltitude;
+    double meanAcc;
+    double meanAlt;
+    double pastMeanAlt;
+    double altitudeDifference;
+    double Acc[enableLenght];
+    double Alt[enableLenght];
     int counter;
-    int motorOn; 
-}
+    bool motorOn;
+    bool controlOn;
+    bool apogeeAchieved;
+};
 
 #endif
