@@ -5,8 +5,8 @@
 //Giroscopios
 MPU6050 mpu1(0x68);
 MPU6050 mpu2(0x69);
-int16_t ax1, ay1, az1, gx1, gy1, gz1;
-int16_t ax2, ay2, az2, gx2, gy2, gz2;
+int16_t ax1_Raw, ay1_Raw, az1_Raw, gx1_Raw, gy1_Raw, gz1_Raw;
+int16_t ax2_Raw, ay2_Raw, az2_Raw, gx2_Raw, gy2_Raw, gz2_Raw;
 
 //Barometro
 Adafruit_BMP280 bmp;
@@ -34,8 +34,8 @@ void setup() {
 
 void loop() {
 
-  mpu1.getMotion6(&ax1, &ay1, &az1, &gx1, &gy1, &gz1);
-  mpu2.getMotion6(&ax2, &ay2, &az2, &gx2, &gy2, &gz2);
+  mpu1.getMotion6(&ax1_Raw, &ay1_Raw, &az1_Raw, &gx1_Raw, &gy1_Raw, &gz1_Raw);
+  mpu2.getMotion6(&ax2_Raw, &ay2_Raw, &az2_Raw, &gx2_Raw, &gy2_Raw, &gz2_Raw);
 
   /* Serial.println(informacao) */
 
