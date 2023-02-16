@@ -1,57 +1,59 @@
-/*
-
-  EnableFunction.cpp
-  Autor: Bruno Sorban, Kaleb Ramos, Lucas Wu, Mateus Stano
-  Novembro de 2022
- 
-*/
-
-#include "Arduino.h"
 #include "EnableFunction.h"
 
-EnableFunction::EnableFunction(){
-  for (int i = 0; i < 5; i++){
-    v[i] = 0.0;
-  }
-
-  mean = 0.0;
-  counter = 0;
-  motorOn = 0;
+EnableFunction::EnableFunction(double minAltitude, double apogeeAltitude) {
+    this->minAltitude = minAltitude;
+    this->apogeeAltitude = apogeeAltitude;
+    for(int i = 0; i < enableLenght; i++) {
+        Alt[i] = 0.0;
+        Acc[i] = 0.0;
+    }
+    apogeeAchieved = false;
+    meanAlt = 0.0;
+    meanAcc = 0.0;
+    counter = 0;
+    motorOn = false;
+    pastMeanAlt = 0.0;
+    altitudeDifference = 0.0;
 }
 
-double EnableFunction::addAcceleration(double az) {
-  mean = mean - (v[0] - az) / 5;
-  v[0] = v[1];
-  v[1] = v[2];
-  v[2] = v[3];
-  v[3] = v[4];
-  v[4] = az;
+EnableFunction::~EnableFunction() {
 
-  // esperando motor ligar
-  if (mean > (10.0) && motorOn == 0) // se a media for superior a 2g (significa que o motor ligou) - motor e gs tem sentidos diferentes
-    {                                                      // && motor desligado (garante primeiro estado)
-      counter++;      
+}
 
-      if (counter >= 50) { // considera uma margem de meio segundo
-        motorOn = 1;     // liga o motor
-        counter = 0;     // reseta o counter para reciclar variaveis
-      }
+void EnableFunction::addValues(double acceleration, double measuredAltitude) {
+    //calculo das medias moveis
+    meanAcc = meanAcc - (Acc[0] - acceleration)/enableLenght;
+    for(int i = 0; i < enableLenght - 1; i++) {
+        Acc[i] = Acc[i + 1];
     }
-      
-    // motor ligado
-  if (motorOn == 1) {
-    counter++; // considera counter por meio segundo para evitar erros no momento que o foguete liga  
-    if (counter >= 50){
-      if (mean >= 0.0) { // se a aceleracao esta para cima (menor que 1g) controle fica desligado
-        return 0; // controle desligado;
-      }
-      else { // quando a aceleracao fica igual a 1g (motor desligou de novo) controle liga
-        return 1; // controle ligado;
-      }
-    }
-  }
+    Acc[enableLenght - 1] = acceleration;
 
-  else {
-    counter = 0;
-  }
+    pastMeanAlt = meanAlt;
+    meanAlt = meanAlt - (Alt[0] - measuredAltitude)/enableLenght;
+    for(int i = 0; i < enableLenght - 1; i++) {
+        Alt[i] = Alt[i + 1];
+    }
+    Alt[enableLenght - 1] = measuredAltitude;
+
+    altitudeDifference = meanAlt - pastMeanAlt; //calcula diferenca de altitude para ver se a velocidade e positiva ou negativa
+
+    //condicoes atuais
+    if(meanAcc > 0 && motorOn == false) { //aceleracao positiva indica motor ligado
+    counter++;
+        if(counter >= minCounters) {
+            motorOn = true;
+            counter = 0;
+        }
+    }
+    if(meanAcc < 0 || meanAlt >= minAltitude) { //aceleracao negativa indica motor desligado (chegou na altitude de burnout)
+        motorOn = false;
+        counter++;
+        if(counter >= minCounters && apogeeAchieved == false) { //o controle so fica ligado antes de atingir o apogeu
+            controlOn = true;
+        }
+    }
+    if(meanAlt >= apogeeAltitude || altitudeDifference < 0) { //atingiu o apogeu e desliga o controle
+        apogeeAchieved == true;
+        controlOn = false;
+    }
 }
