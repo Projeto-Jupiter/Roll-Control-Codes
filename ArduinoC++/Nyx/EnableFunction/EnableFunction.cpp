@@ -1,3 +1,11 @@
+/*
+
+  EnableFunction.h
+  Autor: Bruno Sorban, Kaleb Ramos, Lucas Wu, Mateus Stano
+  Fevereiro de 2023
+ 
+*/
+
 #include "EnableFunction.h"
 
 EnableFunction::EnableFunction(double minAltitude, double apogeeAltitude) {
