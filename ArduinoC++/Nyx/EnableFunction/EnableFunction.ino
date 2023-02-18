@@ -63,7 +63,7 @@ void loop() {
   altitude = bmp.readAltitude();
 
   enable->addValues(AcX, altitude); //ver a orientacao do giroscopio
-  if(enable->getControlOn() == true && enable->getApogeeAchieved() == false) {
+  if(enable->getControlOn() == true) {
     //PID
   }
 }
