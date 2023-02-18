@@ -1,6 +1,6 @@
 /*
 
-  EnableFunction.h
+  EnableFunction.cpp
   Autor: Bruno Sorban, Kaleb Ramos, Lucas Wu, Mateus Stano
   Fevereiro de 2023
  
@@ -15,13 +15,14 @@ EnableFunction::EnableFunction(double minAltitude, double apogeeAltitude) {
         Alt[i] = 0.0;
         Acc[i] = 0.0;
     }
-    apogeeAchieved = false;
-    meanAlt = 0.0;
     meanAcc = 0.0;
-    counter = 0;
-    motorOn = false;
+    meanAlt = 0.0;
     pastMeanAlt = 0.0;
     altitudeDifference = 0.0;
+    counter = 0;
+    motorOn = false;
+    controlOn = false;
+    apogeeAchieved = false;
 }
 
 EnableFunction::~EnableFunction() {
@@ -64,4 +65,12 @@ void EnableFunction::addValues(double acceleration, double measuredAltitude) {
         apogeeAchieved == true;
         controlOn = false;
     }
+}
+
+bool EnableFunction::getControlOn() {
+    return controlOn;
+}
+
+bool EnableFunction::getApogeeAchieved() {
+    return apogeeAchieved;
 }
