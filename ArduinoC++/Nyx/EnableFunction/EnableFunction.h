@@ -18,7 +18,6 @@ public:
     ~EnableFunction();
     void addValues(double acceleration, double measuredAltitude);
     bool getControlOn();
-    bool getApogeeAchieved();
 
 private:
     double minAltitude;
