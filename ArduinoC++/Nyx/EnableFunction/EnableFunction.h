@@ -16,7 +16,9 @@ class EnableFunction {
 public:
     EnableFunction(double minAltitude, double apogeeAltitude);
     ~EnableFunction();
-    void addValues(double acceleration, double measuredAltitude); 
+    void addValues(double acceleration, double measuredAltitude);
+    bool getControlOn();
+    bool getApogeeAchieved();
 
 private:
     double minAltitude;
