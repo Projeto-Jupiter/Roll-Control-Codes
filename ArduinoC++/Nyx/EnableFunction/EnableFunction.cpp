@@ -48,16 +48,11 @@ void EnableFunction::addValues(double acceleration, double measuredAltitude) {
 
     //condicoes atuais
     if(meanAcc > 0 && motorOn == false) { //aceleracao positiva indica motor ligado
-    counter++;
-        if(counter >= minCounters) {
-            motorOn = true;
-            counter = 0;
-        }
+        motorOn = true;
     }
     if(meanAcc < 0 || meanAlt >= minAltitude) { //aceleracao negativa indica motor desligado (chegou na altitude de burnout)
         motorOn = false;
-        counter++;
-        if(counter >= minCounters && apogeeAchieved == false) { //o controle so fica ligado antes de atingir o apogeu
+        if(apogeeAchieved == false) { //o controle so fica ligado antes de atingir o apogeu
             controlOn = true;
         }
     }
