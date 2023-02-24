@@ -26,18 +26,18 @@ uint addr = 0; //endereco de armazenamento
 
 void setup() {
   Serial.begin(115200);
-  hspi->begin(); //SCLK, MISO, MOSI, SS
+  hspi->begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_SS); //SCLK, MISO, MOSI, SS
   Wire.begin();
   flash.begin();
   flash.eraseChip(); //Executar uma vez para limpar a memoria
   
 //Escrita de dados
-  flash.writeByte(addr, byte1);
-  flash.writeByte(addr + 1, byte2);
+  //flash.writeByte(addr, byte1);
+  //flash.writeByte(addr + 1, byte2);
   
 //Leitura de dados
-  concatenada = (flash.readByte(addr+1) << 8) | flash.readByte(addr);
-  Serial.print(concatenada);  
+  //concatenada = (flash.readByte(addr+1) << 8) | flash.readByte(addr);
+  Serial.print("Done");  
 }
 
 void loop() {
