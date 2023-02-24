@@ -14,7 +14,6 @@
 
 SPIClass *hspi = new SPIClass(HSPI);
 uint8_t chipSelect = 15;
-
 SPIFlash flash(chipSelect, hspi);
 
 unsigned int addr = 0; //endereco de armazenamento
@@ -36,24 +35,30 @@ void loop() {
     addr = 0;
     for(int i = 0; i < 65536; i++){
       for(int j = 0; j < 7; j++){
-        Serial.print((flash.readByte(addr+1) << 8) | flash.readByte(addr));
+        Serial.print(int8_t(flash.readByte(addr)));
         Serial.print(",");
-        addr = addr + 2;
+        addr++;
+        Serial.print(int8_t(flash.readByte(addr)));
+        Serial.print(",");
+        addr++;
       }
-      Serial.print((flash.readByte(addr+1) << 8) | flash.readByte(addr));
+      Serial.print(int8_t(flash.readByte(addr)));
+      Serial.print(",");
+      addr++;
+      Serial.print(int8_t(flash.readByte(addr)));
       Serial.println(",");
-      addr = addr + 2;
+      addr++;
     }
   }
   else if(input == 2){
     addr = 1048576;
     for(int i = 0; i < 65536; i++){
       for(int j = 0; j < 7; j++){
-        Serial.print((flash.readByte(addr+1) << 8) | flash.readByte(addr));
+        Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
         Serial.print(",");
         addr = addr + 2;
       }
-      Serial.print((flash.readByte(addr+1) << 8) | flash.readByte(addr));
+      Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
       Serial.println(",");
       addr = addr + 2;
     }
@@ -62,11 +67,11 @@ void loop() {
     addr = 2097152;
     for(int i = 0; i < 65536; i++){
       for(int j = 0; j < 7; j++){
-        Serial.print((flash.readByte(addr+1) << 8) | flash.readByte(addr));
+        Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
         Serial.print(",");
         addr = addr + 2;
       }
-      Serial.print((flash.readByte(addr+1) << 8) | flash.readByte(addr));
+      Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
       Serial.println(",");
       addr = addr + 2;
     }
@@ -75,11 +80,11 @@ void loop() {
     addr = 3145728;
     for(int i = 0; i < 65536; i++){
       for(int j = 0; j < 7; j++){
-        Serial.print((flash.readByte(addr+1) << 8) | flash.readByte(addr));
+        Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
         Serial.print(",");
         addr = addr + 2;
       }
-      Serial.print((flash.readByte(addr+1) << 8) | flash.readByte(addr));
+      Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
       Serial.println(",");
       addr = addr + 2;
     }
