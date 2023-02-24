@@ -1,63 +1,48 @@
-#include <PID_v1.h>
 #include <ESP32Servo.h>
-#include <Wire.h>
-#include <SPIFlash.h>
-#include <SPI.h>
 #include <math.h>
+#include <RocketPID.h>
+#include <map>
 
 // variáveis do servo
 Servo servo1;
 Servo servo2;
 
-// dado lido do vetor Data
-
+std::map<int, float> myMap = {
+  {-8, 1340}, // -8 -> 1348 - 1330
+  {-7, 1358}, // -7 -> 1368 - 1349
+  {-6, 1378}, // -6 -> 1387 - 1369
+  {-5, 1398}, // -5 -> 1407 - 1388
+  {-4, 1418}, // -4 -> 1426 - 1408
+  {-3, 1438}, // -3 -> 1446 - 1427
+  {-2, 1458}, // -2 -> 1465 - 1447
+  {-1, 1477}, // -1 -> 1485 - 1466
+  {0, 1495},  //  0 -> 1487 - 1502
+  {1, 1513},  //  1 -> 1503 - 1522
+  {2, 1532},   //  2 -> 1523 - 1541 
+  {3, 1552},  //  3 -> 1542 - 1561
+  {4, 1572},  //  4 -> 1562 - 1581
+  {5, 1591},  //  5 -> 1582 - 1600
+  {6, 1612},  //  6 -> 1601 - 1620 
+  {7, 1630},  //  7 -> 1621 - 1639
+  {8, 1650}   //  8 -> 1640 - 1659
+};
 
 // inicializa variaveis do controlador
 float cantAngle;              // Variables of interest
 float Kp = 0.005, Ki = 0.01, Kd = 0.000;
-//PID myPID(&dado_filtrado, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+int setPoint = 0;
+RocketPID testePID(setPoint, Kp, Ki, Kd);
+float dado_filtrado;
+float Output; //usado na loop (em graus)
+float dutyCycle; //usado como input do servo, em microssegundos
+int lastCantAngle = 0;     // em graus
+
 
 // variáveis de controle de frequência de amostragem
 int t0 = 0;
 int t1 = 0;
 int16_t delta = 0;
-int periodo = 0.01;                                                     //Período de amostragem em segundos
 int dataCont = 0;
-
-float lastInput = 0.0;
-float lastErr = 0.0;
-int setPoint = 0;
-float err;
-float dado_filtrado;
-float d_input;
-float d_error;
-float proportional;
-float integral;
-float derivative;
-float dt = 0.01;
-int lower = -8;
-int upper = 8;
-float Output; //usado na loop (em graus)
-float output; //usado na função computePID
-float dutyCycle; //usado como input do servo, em microssegundos
-float lastCantAngleM = 1500; //in microseconds 
-float lastCantAngle = 90;
-
-// variáveis da memória
-#define HSPI_MISO   12
-#define HSPI_MOSI   13
-#define HSPI_SCLK   14
-#define HSPI_SS     15
-
-//SPIClass *hspi = new SPIClass(HSPI);
-//uint8_t chipSelect = 15;
-//SPIFlash flash(chipSelect, hspi);
-
-int16_t intermed;
-int16_t concatenada; //variavel de leitura
-int8_t byte0;
-int8_t byte1;
-int memCont = 0;
 
 // Dados vindos do RocketPy [time(s), w3(rad/s), aZ(m/s²), z(m)]
 float Data[1424][4] = {
@@ -1488,151 +1473,73 @@ float Data[1424][4] = {
 
 void setup() {
   Serial.begin(115200);
-  //hspi->begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_SS); //SCLK, MISO, MOSI, SS
-  Wire.begin();
-  //flash.begin();
-
-  // Atribui pinos aos servos
   servo1.attach(33); 
   servo2.attach(18);
-/*
-   for (int pos = 70; pos <= 90; pos += 1) { // goes from 0 degrees to 180 degrees
-    // in steps of 1 degree
-    servo1.write(pos);              // tell servo to go to position in variable 'pos'
-    servo2.write(pos);
-    delay(20);                       // waits 15ms for the servo to reach the position
+
+  for (int pos = 0; pos <= 8; pos++){
+    servo1.writeMicroseconds(myMap[pos]);
+    servo2.writeMicroseconds(myMap[pos]);
+    delay(100);
   }
-  for (int pos = 90; pos >= 70; pos -= 1) { // goes from 180 degrees to 0 degrees
-    servo1.write(pos);              // tell servo to go to position in variable 'pos'
-    servo2.write(pos);
-    delay(20);                       // waits 15ms for the servo to reach the position
+  for (int pos = 8; pos >= 0; pos--){
+    servo1.writeMicroseconds(myMap[pos]);
+    servo2.writeMicroseconds(myMap[pos]);
+    delay(100);
   }
-  */
-  // Prepara controlador
-  //Setpoint = 0; // Velocidade angular desejada
-  //myPID.SetMode(AUTOMATIC); //turn the PID on
-  //myPID.SetOutputLimits(-8, 8);
-  // myPID.SetSampleTime(10); // The sample time is being manually controlled on the loop
-  
-  delay(2000);
-  servo1.writeMicroseconds(1500);
-  servo2.writeMicroseconds(1500);
+
   t0 = millis();
   Serial.println("INICIANDO");
+  delay(3000);
 }
 
 void loop() {
-  t1 = millis();
-   //if(dataCont <= 369) {
+   t1 = millis();
    if ((t1 - t0) >= 10 && dataCont <= 1424) {
     Serial.print(Data[dataCont][0]);
     Serial.print(",");
     Serial.print(Data[dataCont][1]);
     Serial.print(",");
     dado_filtrado = Data[dataCont][1];
-    Output = computePID(dado_filtrado)*180/3.1416;
-    Serial.print(Output);
+    cantAngle = testePID.computePID(dado_filtrado)*180/3.1416;
+    Serial.print(cantAngle);
     Serial.print(",");
-    // Convert canard output to servo output
-    cantAngle = Output + 90;
-    // Write output on the servo
-   
-    dutyCycle = (2000/140)*cantAngle + 500;
+    
+    // Write output on the servo--------------------------------
     if (round(cantAngle) > lastCantAngle) {
-      lastCantAngleM = lastCantAngleM + 15;
       lastCantAngle++;
-      //dutyCycle = (2000/140)*lastCantAngle + 500;
-      servo1.writeMicroseconds(lastCantAngleM);
-      servo2.writeMicroseconds(lastCantAngleM);
+      servo1.writeMicroseconds(myMap[lastCantAngle]);
+      servo2.writeMicroseconds(myMap[lastCantAngle]);
     }
     else if(round(cantAngle) < lastCantAngle) {
-      lastCantAngleM = lastCantAngleM - 15;
       lastCantAngle--;
-      //dutyCycle = (2000/140)*lastCantAngle + 500;
-      servo1.writeMicroseconds(lastCantAngleM);
-      servo2.writeMicroseconds(lastCantAngleM);
+      servo1.writeMicroseconds(myMap[lastCantAngle]);
+      servo2.writeMicroseconds(myMap[lastCantAngle]);
     }
     else {
-      //dutyCycle = (2000/140)*lastCantAngle + 500;
-      servo1.writeMicroseconds(lastCantAngleM);
-      servo2.writeMicroseconds(lastCantAngleM);
+      servo1.writeMicroseconds(myMap[lastCantAngle]);
+      servo2.writeMicroseconds(myMap[lastCantAngle]);
     }
-    Serial.print(lastCantAngle-90);
-    Serial.print(",");
-    Serial.print(lastCantAngleM);
-    Serial.println(",");
-    
-    //intermed = int16_t(cantAngle * 1000);
-    //byte0 = (intermed & 255);
-    //byte1 = ((intermed >> 8) & 255);
-    //flash.writeByte(memCont, byte0);
-    //memCont++;
-    //flash.writeByte(memCont, byte1);
-    //memCont++;
+    //-------------------------------------------------------
 
-    //delta = int16_t(t1-t0);
-    //byte0 = (delta & 255);
-    //byte1 = ((delta >> 8) & 255);
-    //flash.writeByte(memCont, byte0);
-    //memCont++;
-    //flash.writeByte(memCont, byte1);
-    //memCont++;
+    Serial.print(lastCantAngle);
+    Serial.print(",");
+    Serial.print(myMap[lastCantAngle]);
+    Serial.println(",");
     
     dataCont++;
     t0 = t1;
   }
   if(dataCont == 1424) {
-    for (int pos = lastCantAngleM; pos <= 2000; pos++){
-      servo1.writeMicroseconds(pos);
-      servo2.writeMicroseconds(pos);
-      delay(1);
+    for (int pos = 0; pos <= 8; pos++){
+      servo1.writeMicroseconds(myMap[pos]);
+      servo2.writeMicroseconds(myMap[pos]);
+      delay(100);
     }
-    for (int pos = 2000; pos >= 1500; pos--){
-      servo1.writeMicroseconds(pos);
-      servo2.writeMicroseconds(pos);
-      delay(1);
+    for (int pos = 8; pos >= 0; pos--){
+      servo1.writeMicroseconds(myMap[pos]);
+      servo2.writeMicroseconds(myMap[pos]);
+      delay(100);
     }
     dataCont++;
   }
-}
-
-float computePID(float dadoFiltrado) {
-
-    dado_filtrado = dadoFiltrado;
-
-    //Compute error terms
-    err = setPoint - dado_filtrado;
-    d_input = dado_filtrado - lastInput;
-    d_error = err - lastErr; 
-
-    //Compute the proportional term
-    proportional = Kp * err;
-
-    //Compute integral and derivative terms
-    integral += Ki * err * dt;
-    integral = clamp(integral, lower, upper);  //Avoid integral windup
-
-    derivative = -Kd * d_input / dt;
-
-    //Compute final output
-    output = proportional + integral + derivative;
-    output = clamp(output, lower, upper);
-
-    //Keep track of state
-    lastInput = dado_filtrado;
-    lastErr = err;
-return output;
-}
-
-float clamp(float value, int lower, int upper) {
-    int low;
-    int up;
-  
-    low = lower;
-    up = upper;
-    if (value > up)
-        return up;
-    if (value < low)
-        return low;
-return value;
 }
