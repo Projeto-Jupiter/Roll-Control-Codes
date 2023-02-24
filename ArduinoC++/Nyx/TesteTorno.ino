@@ -35,6 +35,7 @@ uint32_t t0, t1, t0mem, t1mem;
 int16_t delta = 0;
 int16_t periodo = 0;
 uint32_t memCont = 0;
+int erros = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -92,101 +93,149 @@ void setup() {
 }
 
 void loop() {
-    
-    t1 = millis();
-    if ((t1 - t0) >= 5 && memCont < 8388592) {    // frequência de amostragem = 200hz, T = 5ms
+  
+  t1 = millis();
+    if ((t1 - t0) >= 5 && memCont < 3600) {    // frequência de amostragem = 200hz, T = 5ms
       
       t0mem = millis();
 
       mpu1.getMotion6(&ax1_Raw, &ay1_Raw, &az1_Raw, &gx1_Raw, &gy1_Raw, &gz1_Raw);
       mpu2.getMotion6(&ax2_Raw, &ay2_Raw, &az2_Raw, &gx2_Raw, &gy2_Raw, &gz2_Raw);
-      
       periodo = int16_t(t1-t0);           //2bytes do periodo
-      Serial.print(periodo);
-      Serial.print(",");
       byte0 = (periodo & 255);
+      Serial.print(byte0);
+      Serial.print(",");
       byte1 = ((periodo >> 8) & 255);
-      flash.writeByte(memCont, byte0);
+      Serial.print(byte1);
+      Serial.print(",");
+      delay(1000);
+      if(!flash.writeByte(memCont, byte0))
+        erros++;
+      delay(1000);
       memCont++;
-      flash.writeByte(memCont, byte1);
+      if(!flash.writeByte(memCont, byte1))
+        erros++;
+      delay(1000);
       memCont++;
       
-      value = gx1_Raw;                     //2bytes do w1 do sensor 1
-      Serial.print(value);
+      //2bytes do w1 do sensor 1
+      byte0 = (gx1_Raw & 255);
+      Serial.print(byte0);
       Serial.print(",");
-      byte0 = (value & 255);
-      byte1 = ((value >> 8) & 255);
-      flash.writeByte(memCont, byte0);
+      byte1 = ((gx1_Raw >> 8) & 255);
+      Serial.print(byte1);
+      Serial.print(",");
+      if(flash.writeByte(memCont, byte0))
+        erros++;
+      delay(1000);
       memCont++;
-      flash.writeByte(memCont, byte1);
+      if(flash.writeByte(memCont, byte1))
+        erros++;
+      delay(1000);
       memCont++;
   
-      value = gy1_Raw;                     //2bytes do w2 do sensor 1
-      Serial.print(value);
+      //2bytes do w2 do sensor 1
+      byte0 = (gy1_Raw & 255);
+      Serial.print(byte0);
       Serial.print(",");
-      byte0 = (value & 255);
-      byte1 = ((value >> 8) & 255);
-      flash.writeByte(memCont, byte0);
+      byte1 = ((gy1_Raw >> 8) & 255);
+      Serial.print(byte1);
+      Serial.print(",");
+      if(flash.writeByte(memCont, byte0))
+        erros++;
+      delay(1000);
       memCont++;
-      flash.writeByte(memCont, byte1);
+      if(flash.writeByte(memCont, byte1))
+        erros++;
+      delay(1000);
       memCont++;
   
-      value = gz1_Raw;                     //2bytes do w3 do sensor 1
-      Serial.print(value);
+      //2bytes do w3 do sensor 1
+      byte0 = (gz1_Raw & 255);
+      Serial.print(byte0);
       Serial.print(",");
-      byte0 = (value & 255);
-      byte1 = ((value >> 8) & 255);
-      flash.writeByte(memCont, byte0);
+      byte1 = ((gz1_Raw >> 8) & 255);
+      Serial.print(byte1);
+      Serial.print(",");
+      if(flash.writeByte(memCont, byte0))
+        erros++;
+      delay(1000);
       memCont++;
-      flash.writeByte(memCont, byte1);
+      if(flash.writeByte(memCont, byte1))
+        erros++;
+      delay(1000);
       memCont++;
   
-      value = gx2_Raw;                     //2bytes do w1 do sensor 2
-      Serial.print(value);
+      //2bytes do w1 do sensor 2
+      byte0 = (gx2_Raw & 255);
+      Serial.print(byte0);
       Serial.print(",");
-      byte0 = (value & 255);
-      byte1 = ((value >> 8) & 255);
-      flash.writeByte(memCont, byte0);
+      byte1 = ((gx2_Raw >> 8) & 255);
+      Serial.print(byte1);
+      Serial.print(",");
+      if(flash.writeByte(memCont, byte0))
+        erros++;
+      delay(1000);
       memCont++;
-      flash.writeByte(memCont, byte1);
+      if(flash.writeByte(memCont, byte1))
+        erros++;
+      delay(1000);
       memCont++;
   
-      value = gy2_Raw;                     //2bytes do w2 do sensor 2
-      Serial.print(value);
+      //2bytes do w2 do sensor 2
+      byte0 = (gy2_Raw & 255);
+      Serial.print(byte0);
       Serial.print(",");
-      byte0 = (value & 255);
-      byte1 = ((value >> 8) & 255);
-      flash.writeByte(memCont, byte0);
+      byte1 = ((gy2_Raw >> 8) & 255);
+      Serial.print(byte1);
+      Serial.print(",");
+      if(flash.writeByte(memCont, byte0))
+        erros++;
+      delay(1000);
       memCont++;
-      flash.writeByte(memCont, byte1);
+      if(flash.writeByte(memCont, byte1))
+        erros++;
+      delay(1000);
       memCont++;
   
-      value = gz2_Raw;                     //2bytes do w3 do sensor 2
-      Serial.print(value);
+      //2bytes do w3 do sensor 2
+      byte0 = (gz2_Raw & 255);
+      Serial.print(byte0);
       Serial.print(",");
-      byte0 = (value & 255);
-      byte1 = ((value >> 8) & 255);
-      flash.writeByte(memCont, byte0);
+      byte1 = ((gz2_Raw >> 8) & 255);
+      Serial.print(byte1);
+      Serial.print(",");
+      if(flash.writeByte(memCont, byte0))
+        erros++;
+      delay(1000);
       memCont++;
-      flash.writeByte(memCont, byte1);
+      if(flash.writeByte(memCont, byte1))
+        erros++;
+      delay(1000);
       memCont++;
   
       t1mem = millis();
       
       delta = int16_t(t1mem-t0mem);
-      Serial.print(delta);
-      Serial.println(",");
       byte0 = (delta & 255);
+      Serial.print(byte0);
+      Serial.print(",");
       byte1 = ((delta >> 8) & 255);
-      flash.writeByte(memCont, byte0);
+      Serial.print(byte1);
+      Serial.println(",");
+      if(flash.writeByte(memCont, byte0))
+        erros++;
+      delay(1000);
       memCont++;
-      flash.writeByte(memCont, byte1);
+      if(flash.writeByte(memCont, byte1))
+        erros++;
       memCont++;
       
       t0 = t1;
     }
-    else if(memCont == 524288){
+    else if(memCont == 3600){
       Serial.println("Memória Preenchida.");
+      Serial.println(erros);
       memCont++;
     } 
 }
