@@ -90,11 +90,12 @@ void setup() {
   t0 = millis();
   Serial.println("Configuração Completa.");  
   delay(10000);
+  delay(1100);
 }
 
 void loop() {
-  
-  t1 = millis();
+
+    t1 = millis();
     if ((t1 - t0) >= 5 && memCont < 3600) {    // frequência de amostragem = 200hz, T = 5ms
       
       t0mem = millis();
@@ -108,14 +109,14 @@ void loop() {
       byte1 = ((periodo >> 8) & 255);
       Serial.print(byte1);
       Serial.print(",");
-      delay(1000);
+      delay(50);
       if(!flash.writeByte(memCont, byte0))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
       if(!flash.writeByte(memCont, byte1))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
       
       //2bytes do w1 do sensor 1
@@ -127,11 +128,11 @@ void loop() {
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
       if(flash.writeByte(memCont, byte1))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
   
       //2bytes do w2 do sensor 1
@@ -143,11 +144,11 @@ void loop() {
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
       if(flash.writeByte(memCont, byte1))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
   
       //2bytes do w3 do sensor 1
@@ -159,11 +160,11 @@ void loop() {
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
       if(flash.writeByte(memCont, byte1))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
   
       //2bytes do w1 do sensor 2
@@ -175,11 +176,11 @@ void loop() {
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
       if(flash.writeByte(memCont, byte1))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
   
       //2bytes do w2 do sensor 2
@@ -191,11 +192,11 @@ void loop() {
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
       if(flash.writeByte(memCont, byte1))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
   
       //2bytes do w3 do sensor 2
@@ -207,11 +208,11 @@ void loop() {
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
       if(flash.writeByte(memCont, byte1))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
   
       t1mem = millis();
@@ -225,7 +226,7 @@ void loop() {
       Serial.println(",");
       if(flash.writeByte(memCont, byte0))
         erros++;
-      delay(1000);
+      delay(50);
       memCont++;
       if(flash.writeByte(memCont, byte1))
         erros++;
@@ -237,5 +238,5 @@ void loop() {
       Serial.println("Memória Preenchida.");
       Serial.println(erros);
       memCont++;
-    } 
+    }
 }
