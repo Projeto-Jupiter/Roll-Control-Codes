@@ -18,6 +18,7 @@ public:
     ~EnableFunction();
     void addValues(double acceleration, double measuredAltitude);
     bool getControlOn();
+    bool getMotorOn();
 
 private:
     double minAltitude;

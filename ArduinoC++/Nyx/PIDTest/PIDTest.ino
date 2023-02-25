@@ -2,6 +2,7 @@
 #include <math.h>
 #include <RocketPID.h>
 #include <map>
+#include <EnableFunction.h>
 
 // variáveis do servo
 Servo servo1;
@@ -18,7 +19,7 @@ std::map<int, float> myMap = {
   {-1, 1477}, // -1 -> 1485 - 1466
   {0, 1495},  //  0 -> 1487 - 1502
   {1, 1513},  //  1 -> 1503 - 1522
-  {2, 1532},   //  2 -> 1523 - 1541 
+  {2, 1532},  //  2 -> 1523 - 1541 
   {3, 1552},  //  3 -> 1542 - 1561
   {4, 1572},  //  4 -> 1562 - 1581
   {5, 1591},  //  5 -> 1582 - 1600
@@ -44,7 +45,7 @@ int t1 = 0;
 int16_t delta = 0;
 int dataCont = 0;
 
-// Dados vindos do RocketPy [time(s), w3(rad/s), aZ(m/s²), z(m)]
+// Dados do RocketPy [time(s), w3(rad/s), aZ(m/s²), z(m)]
 float Data[1424][4] = {
 4.300000,-0.366076,-12.622438,1025.144496,
 4.310000,0.326407,-12.617139,1026.659056,
