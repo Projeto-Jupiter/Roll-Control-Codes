@@ -10,7 +10,6 @@
 #define ENABLEFUNCTION_H
 
 const int enableLenght = 100; //tbd
-const int minCounters = 50; //tbd
 
 class EnableFunction {
 public:
@@ -18,8 +17,7 @@ public:
     ~EnableFunction();
     void addValues(double acceleration, double measuredAltitude);
     bool getControlOn();
-    bool getMotorOn();
-
+  
 private:
     double minAltitude;
     double apogeeAltitude;
