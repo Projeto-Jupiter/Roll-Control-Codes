@@ -65,7 +65,3 @@ void EnableFunction::addValues(double acceleration, double measuredAltitude) {
 bool EnableFunction::getControlOn() {
     return controlOn;
 }
-
-bool EnableFunction::getMotorOn() {
-    return motorOn;
-}
