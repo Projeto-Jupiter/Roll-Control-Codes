@@ -9,17 +9,18 @@
 #ifndef ENABLEFUNCTION_H
 #define ENABLEFUNCTION_H
 
-const int enableLenght = 100; //tbd
+const int enableLenght = 100;
 
 class EnableFunction {
 public:
-    EnableFunction(double minAltitude, double apogeeAltitude);
+    EnableFunction(double elevation, double minAltitude, double apogeeAltitude);
     ~EnableFunction();
     void addValues(double acceleration, double measuredAltitude);
     bool getControlOn();
     bool getMotorOn();
   
 private:
+    double elevation;
     double minAltitude;
     double apogeeAltitude;
     double meanAcc;
