@@ -18,6 +18,7 @@ SPIFlash flash(chipSelect, hspi);
 
 unsigned int addr = 0; //endereco de armazenamento
 int input;
+int16_t concatenada = 0; //variavel de leitura
 
 void setup() {
   Serial.begin(115200);
@@ -54,37 +55,72 @@ void loop() {
     addr = 1048576;
     for(int i = 0; i < 65536; i++){
       for(int j = 0; j < 7; j++){
-        Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
+        Serial.print(int8_t(flash.readByte(addr)));
         Serial.print(",");
-        addr = addr + 2;
+        addr++;
+        Serial.print(int8_t(flash.readByte(addr)));
+        Serial.print(",");
+        addr++;
       }
-      Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
+      Serial.print(int8_t(flash.readByte(addr)));
+      Serial.print(",");
+      addr++;
+      Serial.print(int8_t(flash.readByte(addr)));
       Serial.println(",");
-      addr = addr + 2;
+      addr++;
     }
   }
   else if(input == 3){
     addr = 2097152;
     for(int i = 0; i < 65536; i++){
       for(int j = 0; j < 7; j++){
-        Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
+        Serial.print(int8_t(flash.readByte(addr)));
         Serial.print(",");
-        addr = addr + 2;
+        addr++;
+        Serial.print(int8_t(flash.readByte(addr)));
+        Serial.print(",");
+        addr++;
       }
-      Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
+      Serial.print(int8_t(flash.readByte(addr)));
+      Serial.print(",");
+      addr++;
+      Serial.print(int8_t(flash.readByte(addr)));
       Serial.println(",");
-      addr = addr + 2;
+      addr++;
     }
   }
   else if(input == 4){
     addr = 3145728;
     for(int i = 0; i < 65536; i++){
       for(int j = 0; j < 7; j++){
-        Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
+        Serial.print(int8_t(flash.readByte(addr)));
+        Serial.print(",");
+        addr++;
+        Serial.print(int8_t(flash.readByte(addr)));
+        Serial.print(",");
+        addr++;
+      }
+      Serial.print(int8_t(flash.readByte(addr)));
+      Serial.print(",");
+      addr++;
+      Serial.print(int8_t(flash.readByte(addr)));
+      Serial.println(",");
+      addr++;
+    }
+  }
+  else if(input == 5){
+    Serial.print("Periodo,W1(s1),W2(s1),W3(s1),W1(s2),W2(s2),W3(s2),deltaT");
+    Serial.println(",");
+    addr = 0;
+    for(int i = 0; i < 65536; i++){
+      for(int j = 0; j < 7; j++){
+        concatenada = (flash.readByte(addr + 1) << 8) | flash.readByte(addr);
+        Serial.print(concatenada);
         Serial.print(",");
         addr = addr + 2;
       }
-      Serial.print(int16_t((flash.readByte(addr+1) << 8) | flash.readByte(addr)));
+      concatenada = (flash.readByte(addr + 1) << 8) | flash.readByte(addr);
+      Serial.print(concatenada);
       Serial.println(",");
       addr = addr + 2;
     }
