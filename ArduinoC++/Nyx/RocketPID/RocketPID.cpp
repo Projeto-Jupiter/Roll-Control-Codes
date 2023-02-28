@@ -10,7 +10,7 @@
 #include "RocketPID.h"
 #include "Arduino.h"
 
-RocketPID::RocketPID(float setPoint, float Kp, float Ki, float Kd){
+RocketPID::RocketPID(int setPoint, float Kp, float Ki, float Kd){
     this->setPoint = setPoint;
     this->Kp = Kp;
     this->Ki = Ki;

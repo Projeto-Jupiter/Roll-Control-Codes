@@ -14,7 +14,7 @@
 
 class RocketPID{
   public:
-    RocketPID(float setPoint, float Kp, float Ki, float Kd);
+    RocketPID(int setPoint, float Kp, float Ki, float Kd);
     ~RocketPID();
 
     float computePID(float input);
@@ -27,7 +27,7 @@ class RocketPID{
     float getKi();
     float getKd();
   private:
-    float setPoint;
+    int setPoint;
     float dt;
     float Kp, Ki, Kd;
     float proportional, integrative, derivative;
