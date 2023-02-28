@@ -34,14 +34,14 @@ SPIFlash flash(chipSelect, hspi);
 uint32_t t0, t1, t0mem, t1mem;
 int16_t delta = 0;
 int16_t periodo = 0;
-uint32_t memCont = 0;
+long memCont = 0;
 int erros = 0;
 
 void setup() {
   Serial.begin(115200);
 
-  Serial.println("Iniciando Configuração.");  
-  
+  Serial.println("Iniciando Configuração.");
+
   //Configuração da memória
   hspi->begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_SS); //SCLK, MISO, MOSI, SS
   Wire.begin();
@@ -60,13 +60,13 @@ void setup() {
   Wire.write(0x1C);
   Wire.write(0b00011000);  // fundo de escala
   Wire.endTransmission();
-
-  mpu1.setXAccelOffset(-2338);
-  mpu1.setYAccelOffset(-652);
-  mpu1.setZAccelOffset(843);
+  
+  mpu1.setXAccelOffset(-2289);
+  mpu1.setYAccelOffset(-616);
+  mpu1.setZAccelOffset(832);
   mpu1.setXGyroOffset(19);
-  mpu1.setYGyroOffset(32);
-  mpu1.setZGyroOffset(21);
+  mpu1.setYGyroOffset(31);
+  mpu1.setZGyroOffset(28);
 
   mpu2.initialize();
 
@@ -80,23 +80,22 @@ void setup() {
   Wire.write(0b00011000);  // fundo de escala
   Wire.endTransmission();
 
-  mpu2.setXAccelOffset(2120);
-  mpu2.setYAccelOffset(-279);
+  mpu2.setXAccelOffset(2146);
+  mpu2.setYAccelOffset(-231);
   mpu2.setZAccelOffset(1622);
-  mpu2.setXGyroOffset(11);
-  mpu2.setYGyroOffset(0);
+  mpu2.setXGyroOffset(12);
+  mpu2.setYGyroOffset(1);
   mpu2.setZGyroOffset(71);
-  
+
   t0 = millis();
-  Serial.println("Configuração Completa.");  
-  delay(10000);
-  delay(1100);
+  Serial.println("Configuração Completa.");
+  delay(60000);
 }
 
 void loop() {
-
+    
     t1 = millis();
-    if ((t1 - t0) >= 5 && memCont < 3600) {    // frequência de amostragem = 200hz, T = 5ms
+    if ((t1 - t0) >= 5 && memCont < 36000) {    // frequência de amostragem = 200hz, T = 5ms
       
       t0mem = millis();
 
@@ -109,14 +108,14 @@ void loop() {
       byte1 = ((periodo >> 8) & 255);
       Serial.print(byte1);
       Serial.print(",");
-      delay(50);
+      delay(1);
       if(!flash.writeByte(memCont, byte0))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
       if(!flash.writeByte(memCont, byte1))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
       
       //2bytes do w1 do sensor 1
@@ -127,12 +126,12 @@ void loop() {
       Serial.print(byte1);
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
       if(flash.writeByte(memCont, byte1))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
   
       //2bytes do w2 do sensor 1
@@ -143,12 +142,12 @@ void loop() {
       Serial.print(byte1);
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
       if(flash.writeByte(memCont, byte1))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
   
       //2bytes do w3 do sensor 1
@@ -159,12 +158,12 @@ void loop() {
       Serial.print(byte1);
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
       if(flash.writeByte(memCont, byte1))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
   
       //2bytes do w1 do sensor 2
@@ -175,12 +174,12 @@ void loop() {
       Serial.print(byte1);
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
       if(flash.writeByte(memCont, byte1))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
   
       //2bytes do w2 do sensor 2
@@ -191,12 +190,12 @@ void loop() {
       Serial.print(byte1);
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
       if(flash.writeByte(memCont, byte1))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
   
       //2bytes do w3 do sensor 2
@@ -207,12 +206,12 @@ void loop() {
       Serial.print(byte1);
       Serial.print(",");
       if(flash.writeByte(memCont, byte0))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
       if(flash.writeByte(memCont, byte1))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
   
       t1mem = millis();
@@ -225,18 +224,18 @@ void loop() {
       Serial.print(byte1);
       Serial.println(",");
       if(flash.writeByte(memCont, byte0))
-        erros++;
-      delay(50);
+        //erros++;
+      delay(1);
       memCont++;
       if(flash.writeByte(memCont, byte1))
-        erros++;
+        //erros++;
       memCont++;
       
       t0 = t1;
     }
-    else if(memCont == 3600){
+    else if(memCont == 8388607){
       Serial.println("Memória Preenchida.");
-      Serial.println(erros);
+      //Serial.println(erros);
       memCont++;
-    }
+    } 
 }
