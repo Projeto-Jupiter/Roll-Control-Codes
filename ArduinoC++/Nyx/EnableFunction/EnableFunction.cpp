@@ -8,16 +8,15 @@
 
 #include "EnableFunction.h"
 
-EnableFunction::EnableFunction(double elevation, double minAltitude, double apogeeAltitude) {
-    this->elevation = elevation;
+EnableFunction::EnableFunction(double minAltitude, double apogeeAltitude) {
     this->minAltitude = minAltitude;
     this->apogeeAltitude = apogeeAltitude;
     for(int i = 0; i < enableLenght; i++) {
-        Acc[i] = -9.8;
-        Alt[i] = elevation;
+        Alt[i] = 0;
+        Acc[i] = 0;
     }
-    meanAcc = -9.8;
-    meanAlt = elevation;
+    meanAcc = 0.0;
+    meanAlt = 0.0;
     pastMeanAlt = 0.0;
     altitudeDifference = 0.0;
     counter = 0;
