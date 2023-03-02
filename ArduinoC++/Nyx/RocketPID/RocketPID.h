@@ -17,7 +17,7 @@ class RocketPID{
     RocketPID(int setPoint, float Kp, float Ki, float Kd);
     ~RocketPID();
 
-    float computePID(float input);
+    float computePID(double input);
     void setLimits(float lowerInput, float upperInput);
     void setDt(float dtInput);
     float clamp(float value);
