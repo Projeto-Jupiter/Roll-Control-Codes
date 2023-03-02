@@ -16,11 +16,14 @@ LowPass::LowPass(){
   }
 }
 
+LowPass::~LowPass(){
+}
+
 double LowPass::addData(double x){
   for (int i = 0; i < 41; i++){
     data[i] = data[i+1];
   }
-  data[41] = x
+  data[41] = x;
 
   return (0.000730542097152697 * data[0]   -0.000819759833501920 * data[1]   -0.00166082645353546 * data[2]   
         +1.99328430876226e-18 * data[3]    +0.00300608142740516 * data[4]    +0.00251888639362088 * data[5]    

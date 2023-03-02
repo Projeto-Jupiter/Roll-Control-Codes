@@ -7,16 +7,19 @@
  
 */
 
-#ifndef LowPass.h
-#ifndef LowPass.h
+#ifndef LOWPASS.H
+#define LOWPASS.H
 
 #include "Arduino.h"
 
 class LowPass {
   public:
+    LowPass();
+    ~LowPass();
+    
     double addData(double x);
   private:
     double data[42];
-}
+};
 
 #endif
