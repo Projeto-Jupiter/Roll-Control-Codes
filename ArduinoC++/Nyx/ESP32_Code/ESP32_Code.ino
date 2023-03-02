@@ -11,19 +11,20 @@
 #include "EnableFunction.h"     // Biblioteca responsável por ligar e desligar os sistemas de controle
 
 // Inicializando variaveis dos giroscopios
-const int mpuAddr1 = 0x68   // Endereço I2C do primeiro giroscópio (AD0 low)
-const int mpuAddr2 = 0x69   // Endereço I2C do segundo giroscópio (AD0 HIGH)
+const int mpuAddr1 = 0x68;   // Endereço I2C do primeiro giroscópio (AD0 low)
+const int mpuAddr2 = 0x69;   // Endereço I2C do segundo giroscópio (AD0 HIGH)
 
 MPU6050 mpu1(mpuAddr1);     
 MPU6050 mpu2(mpuAddr2);
 int16_t ax1_Raw, ay1_Raw, az1_Raw, gx1_Raw, gy1_Raw, gz1_Raw;
 int16_t ax2_Raw, ay2_Raw, az2_Raw, gx2_Raw, gy2_Raw, gz2_Raw;
-double AcX1, AcY1, AcZ1, GyX1, GyY1, GyZ1;                               //Valores finais (float?)
+double AcX1, AcY1, AcZ1, GyX1, GyY1, GyZ1;                               // Valores finais (float?)
 double AcX2, AcY2, AcZ2, GyX2, GyY2, GyZ2;
 
 // Inicializando variaveis do barometro
-Adafruit_BMP280 bmp;        //debuggar para encontrar a variavel de 2 bytes
-int16_t altRaw;
+Adafruit_BMP280 bmp;        // debuggar para encontrar a variavel de 2 bytes
+const int bmpAddr = 0x76;
+int16_t altitudeBytes;
 float altitude;
 
 // Variaveis da memoria
@@ -37,9 +38,8 @@ SPIClass *hspi = new SPIClass(HSPI);
 int16_t value;            // variável a ser armazenada
 int8_t byte0;             // Byte de value menos significativo
 int8_t byte1;             // Byte de value mais significativo
-uint8_t chipSelect = 15;  // repetir??
 
-SPIFlash flash(chipSelect, hspi);
+SPIFlash flash(HSPI_SS, hspi);
 
 // inicializa variaveis dos servos
 Servo servo1;
@@ -70,30 +70,28 @@ double dado_filtrado;
 LowPass filtro;
 
 // Inicializa variaveis do controlador
-float cantAngle;             
+float cantAngle;
+int16_t cantAngleBytes;        
 float Kp = 0.005, Ki = 0.01, Kd = 0.000;
 int setPoint = 0;
-RocketPID testePID(setPoint, Kp, Ki, Kd);
-float dado_filtrado;
+RocketPID pid(setPoint, Kp, Ki, Kd);
 float Output;
-float dutyCycle;                          //usado como input do servo, em microssegundos
+float dutyCycle;                          // usado como input do servo, em microssegundos
 int lastCantAngle = 0;                    // em graus
 float lower = -8.0;
 float upper = 8.0;
 float dt = 0.01;
 
 // Controle dos estados do foguete
-double minAltitude = 1022.912;                    // Altitude de burnout em (m) (ASL)
-double apogeeAltitude = 2036.743;                 // Apogeu em (m) (ASL)
+double minAltitude = ;                    // Altitude de burnout em (m) (ASL)
+double apogeeAltitude = ;                 // Apogeu em (m) (ASL)
 EnableFunction *enable = new EnableFunction(minAltitude, apogeeAltitude);
 
 // Variaveis do controle de frequencia
-uint32_t t0, t1, t0mem, t1mem;
+uint32_t t0, t1;
 int16_t delta = 0;
-int16_t periodo = 0;
 long memCont = 0;
-
-int dataCont = 0;
+int16_t periodo;
 
 // ===========================================================================================================
 void setup() {
@@ -145,6 +143,8 @@ void setup() {
   mpu2.setYGyroOffset(1);
   mpu2.setZGyroOffset(71);
 
+  bmp.begin(bmpAddr);
+  
   bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     // Operating Mode. 
                   Adafruit_BMP280::SAMPLING_X2,     // Temp. oversampling 
                   Adafruit_BMP280::SAMPLING_X16,    // Pressure oversampling 
@@ -156,8 +156,8 @@ void setup() {
   servo2.attach(18);
 
   //Configuração do controlador
-  setLimits(lower, upper);
-  setDt(dt);
+  pid.setLimits(lower, upper);
+  pid.setDt(dt);
 
   //"Oi" das cannards
   servo1.writeMicroseconds(myMap[0]);
@@ -187,17 +187,16 @@ void loop() {
   t1 = micros();
   if ((t1 - t0) >= 10) {
     
-    // Obtem os dados dos sensores
-    mpu1.getMotion6(&ax1_Raw, &ay1_Raw, &az1_Raw, &gx1_Raw, &gy1_Raw, &gz1_Raw);
+    //Obtem os dados dos sensores
+    //mpu1.getMotion6(&ax1_Raw, &ay1_Raw, &az1_Raw, &gx1_Raw, &gy1_Raw, &gz1_Raw);
     mpu2.getMotion6(&ax2_Raw, &ay2_Raw, &az2_Raw, &gx2_Raw, &gy2_Raw, &gz2_Raw);
-    altRaw = ...
    
-    AcX1 = ax1_Raw / 2048;
-    AcY1 = ay1_Raw / 2048;
-    AcZ1 = az1_Raw / 2048;
-    GyX1 = gx1_Raw / 16.4;
-    GyY1 = gy1_Raw / 16.4;
-    GyZ1 = gz1_Raw / 16.4;
+    //AcX1 = ax1_Raw / 2048;
+    //AcY1 = ay1_Raw / 2048;
+    //AcZ1 = az1_Raw / 2048;
+    //GyX1 = gx1_Raw / 16.4;
+    //GyY1 = gy1_Raw / 16.4;
+    //GyZ1 = gz1_Raw / 16.4;
 
     AcX2 = ax2_Raw / 2048;
     AcY2 = ay2_Raw / 2048;    
@@ -206,12 +205,163 @@ void loop() {
     GyY2 = gy2_Raw / 16.4;
     GyZ2 = gz2_Raw / 16.4;
 
-    altitude = bmp.readAltitude();
+    altitude = bmp.readAltitude() + 45;   //offset de 45m para correção
+    //Serial.println(altitude);
+    enable->addValues(AcX2, altitude);
+
+    if(enable->getControlOn()){
+      dado_filtrado = filtro.addData(GyX2);
+      cantAngle = pid.computePID(dado_filtrado*(3.1416/180))*180/3.1416;
+      //Serial.print(cantAngle);
+      //Serial.print(",");
+      
+      if (round(cantAngle) > lastCantAngle) {
+        lastCantAngle++;
+        servo1.writeMicroseconds(myMap[lastCantAngle]);
+        servo2.writeMicroseconds(myMap[lastCantAngle]);
+      }
+      else if(round(cantAngle) < lastCantAngle) {
+        lastCantAngle--;
+        servo1.writeMicroseconds(myMap[lastCantAngle]);
+        servo2.writeMicroseconds(myMap[lastCantAngle]);
+      }
+      else {
+        servo1.writeMicroseconds(myMap[lastCantAngle]);
+        servo2.writeMicroseconds(myMap[lastCantAngle]);
+      }
+
+      if (memCont < 8388608) {
+
+        periodo = int16_t(t1-t0);           //2bytes do periodo
+        byte0 = (periodo & 255);
+        //Serial.print(byte0);
+        //Serial.print(",");
+        byte1 = ((periodo >> 8) & 255);
+        //Serial.print(byte1);
+        //Serial.print(",");
+        delay(1);
+        flash.writeByte(memCont, byte0);
+        delay(1);
+        memCont++;
+        flash.writeByte(memCont, byte1);
+        delay(1);
+        memCont++;
+
+        //2bytes do accx do sensor 2
+        byte0 = (ax2_Raw & 255);
+        //Serial.print(byte0);
+        //Serial.print(",");
+        byte1 = ((ax2_Raw >> 8) & 255);
+        //Serial.print(byte1);
+        //Serial.print(",");
+        flash.writeByte(memCont, byte0);
+        delay(1);
+        memCont++;
+        flash.writeByte(memCont, byte1);
+        delay(1);
+        memCont++;
+
+        //2bytes do accy do sensor 2
+        byte0 = (ay2_Raw & 255);
+        //Serial.print(byte0);
+        //Serial.print(",");
+        byte1 = ((ay2_Raw >> 8) & 255);
+        //Serial.print(byte1);
+        //Serial.print(",");
+        flash.writeByte(memCont, byte0);
+        delay(1);
+        memCont++;
+        flash.writeByte(memCont, byte1);
+        delay(1);
+        memCont++;
+
+        //2bytes do accz do sensor 2
+        byte0 = (az2_Raw & 255);
+        //Serial.print(byte0);
+        //Serial.print(",");
+        byte1 = ((az2_Raw >> 8) & 255);
+        //Serial.print(byte1);
+        //Serial.print(",");
+        flash.writeByte(memCont, byte0);
+        delay(1);
+        memCont++;
+        flash.writeByte(memCont, byte1);
+        delay(1);
+        memCont++;
+        
+        //2bytes do w1 do sensor 2
+        byte0 = (gx2_Raw & 255);
+        //Serial.print(byte0);
+        //Serial.print(",");
+        byte1 = ((gx2_Raw >> 8) & 255);
+        //Serial.print(byte1);
+        //Serial.print(",");
+        flash.writeByte(memCont, byte0);
+        delay(1);
+        memCont++;
+        flash.writeByte(memCont, byte1);
+        delay(1);
+        memCont++;
     
-    //  float dado_filtrado = filter.addData(GyX);
-    dado_filtrado = filtro.addData(GyX);
+        //2bytes do w2 do sensor 2
+        byte0 = (gy2_Raw & 255);
+        //Serial.print(byte0);
+        //Serial.print(",");
+        byte1 = ((gy2_Raw >> 8) & 255);
+        //Serial.print(byte1);
+        //Serial.print(",");
+        flash.writeByte(memCont, byte0);
+        delay(1);
+        memCont++;
+        flash.writeByte(memCont, byte1);
+        delay(1);
+        memCont++;
     
-    enable->addValues(,);
-    
+        //2bytes do w3 do sensor 2
+        byte0 = (gz2_Raw & 255);
+        //Serial.print(byte0);
+        //Serial.print(",");
+        byte1 = ((gz2_Raw >> 8) & 255);
+        //Serial.print(byte1);
+        //Serial.print(",");
+        flash.writeByte(memCont, byte0);
+        delay(1);
+        memCont++;
+        flash.writeByte(memCont, byte1);
+        delay(1);
+        memCont++;
+
+        //2bytes do sinal enviado aos servos
+        cantAngleBytes = int16_t(cantAngle * 1000);
+        byte0 = (cantAngleBytes & 255);
+        //Serial.print(byte0);
+        //Serial.print(",");
+        byte1 = ((cantAngleBytes >> 8) & 255);
+        //Serial.print(byte1);
+        //Serial.print(",");
+        flash.writeByte(memCont, byte0);
+        delay(1);
+        memCont++;
+        flash.writeByte(memCont, byte1);
+        delay(1);
+        memCont++;
+
+        //2bytes da altitude
+        altitudeBytes = int16_t(altitude * 10);
+        byte0 = (altitudeBytes & 255);
+        //Serial.print(byte0);
+        //Serial.print(",");
+        byte1 = ((altitudeBytes >> 8) & 255);
+        //Serial.print(byte1);
+        //Serial.print(",");
+        flash.writeByte(memCont, byte0);
+        delay(1);
+        memCont++;
+        flash.writeByte(memCont, byte1);
+        delay(1);
+        memCont++;
+      }
     }
+    t0 = t1;
+  }
 }
