@@ -13,15 +13,15 @@ const int enableLenght = 100;
 
 class EnableFunction {
 public:
-    EnableFunction(double minAltitude, double apogeeAltitude);
+    EnableFunction(double altMotorOff, float minAltitude);
     ~EnableFunction();
     void addValues(double acceleration, double measuredAltitude);
     bool getControlOn();
     bool getMotorOn();
   
 private:
-    double minAltitude;
-    double apogeeAltitude;
+    double altMotorOff;
+    float minAltitude;
     double meanAcc;
     double meanAlt;
     double pastMeanAlt;
@@ -31,7 +31,6 @@ private:
     int counter;
     bool motorOn;
     bool controlOn;
-    bool apogeeAchieved;
 };
 
 #endif

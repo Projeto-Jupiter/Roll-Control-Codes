@@ -8,9 +8,9 @@
 
 #include "EnableFunction.h"
 
-EnableFunction::EnableFunction(double minAltitude, double apogeeAltitude) {
+EnableFunction::EnableFunction(double altMotorOff, float minAltitude) {
+    this->altMotorOff = altMotorOff;
     this->minAltitude = minAltitude;
-    this->apogeeAltitude = apogeeAltitude;
     for(int i = 0; i < enableLenght; i++) {
         Alt[i] = 0;
         Acc[i] = 0;
@@ -22,7 +22,6 @@ EnableFunction::EnableFunction(double minAltitude, double apogeeAltitude) {
     counter = 0;
     motorOn = false;
     controlOn = false;
-    apogeeAchieved = false;
 }
 
 EnableFunction::~EnableFunction() {
@@ -47,18 +46,12 @@ void EnableFunction::addValues(double acceleration, double measuredAltitude) {
     altitudeDifference = meanAlt - pastMeanAlt; //calcula diferenca de altitude para ver se a velocidade e positiva ou negativa
 
     //condicoes atuais
-    if(meanAcc > 0 && motorOn == false) { //aceleracao positiva indica motor ligado
+    if((meanAcc > 0 && motorOn == false) || meanAlt >= minAltitude) { //aceleracao positiva indica motor ligado, minAltitude por redundância
         motorOn = true;
     }
-    if((meanAcc < 0 && motorOn == true) || meanAlt >= minAltitude) { //aceleracao negativa indica motor desligado (chegou na altitude de burnout)
+    if((meanAcc < 0 && motorOn == true) || meanAlt >= altMotorOff) { //aceleracao negativa indica motor desligado (chegou na altitude de burnout)
         motorOn = false;
-        if(apogeeAchieved == false) { //o controle so fica ligado antes de atingir o apogeu
-            controlOn = true;
-        }
-    }
-    if(meanAlt >= apogeeAltitude || altitudeDifference < 0) { //atingiu o apogeu e desliga o controle
-        apogeeAchieved == true;
-        controlOn = false;
+        controlOn = true;
     }
 }
 
