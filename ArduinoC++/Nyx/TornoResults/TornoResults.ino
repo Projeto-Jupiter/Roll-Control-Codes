@@ -8,7 +8,7 @@
 #endif
 
 #define HSPI_MISO   12
-#define HSPI_MOSI  13
+#define HSPI_MOSI   13
 #define HSPI_SCLK   14
 #define HSPI_SS     15
 
