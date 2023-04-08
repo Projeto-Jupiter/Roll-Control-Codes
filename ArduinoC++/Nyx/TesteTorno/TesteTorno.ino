@@ -17,7 +17,7 @@ int16_t ax2_Raw, ay2_Raw, az2_Raw, gx2_Raw, gy2_Raw, gz2_Raw;
 
 // Variáveis da memória
 #define HSPI_MISO   12
-#define HSPI_MOSI  13
+#define HSPI_MOSI   13
 #define HSPI_SCLK   14
 #define HSPI_SS     15
 
