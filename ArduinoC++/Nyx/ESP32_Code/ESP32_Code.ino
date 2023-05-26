@@ -232,12 +232,16 @@ void loop() {
       cantAngle = pid.computePID(dado_filtrado*(3.1416/180))*180/3.1416;
       
       if (round(cantAngle) > lastCantAngle) {
-        lastCantAngle++;
+        if(lastCantAngle < 8) {
+          lastCantAngle++;
+        }
         servo1.writeMicroseconds(myMap[lastCantAngle]);
         servo2.writeMicroseconds(myMap2[lastCantAngle]);
       }
       else if(round(cantAngle) < lastCantAngle) {
-        lastCantAngle--;
+        if(lastCantAngle > -8) {
+          lastCantAngle--;
+        }
         servo1.writeMicroseconds(myMap[lastCantAngle]);
         servo2.writeMicroseconds(myMap2[lastCantAngle]);
       }
