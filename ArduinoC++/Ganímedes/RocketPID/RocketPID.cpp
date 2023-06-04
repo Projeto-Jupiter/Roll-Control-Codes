@@ -36,7 +36,7 @@ float RocketPID::computePID(double input){
 
     //Compute integrative and derivative terms
     integrative += Ki * err * dt;
-    integrative = clamp(integrative) * 180/3.1416;  //Avoid integrative windup
+    integrative = antiWindUp(integrative, lower * 180/3.1416, upper * 180/3.1416);  //Avoid integrative windup (-lowerInput, +upperInput)
 
     derivative = -Kd * d_input / dt;
 
@@ -47,11 +47,11 @@ float RocketPID::computePID(double input){
     //Keep track of state
     lastInput = input;
     lastErr = err;
-return output;
+    return output;
 }
 
 void RocketPID::setLimits(float lowerInput, float upperInput){
-    lower = lowerInput * 3.1416/180;
+    lower = lowerInput * 3.1416/180; //Inputs are in degrees
     upper = upperInput * 3.1416/180;
 }
 
@@ -64,7 +64,15 @@ float RocketPID::clamp(float value){
         return upper;
     if (value < lower)
         return lower;
-return value;
+    return value;
+}
+
+float RocketPID::antiWindUp(float integrative, float lowerInput, float upperInput){
+    if (integrative > upperInput)
+        return upperInput;
+    if (integrative < lowerInput)
+        return lowerInput;
+    return integrative;
 }
 
 float RocketPID::getSetPoint(){
