@@ -23,9 +23,9 @@ class RocketPID{
     float clamp(float value);
     float getSetPoint();
     float getDt();
-    float getKp();
-    float getKi();
-    float getKd();
+    float getProportional();
+    float getIntegrative();
+    float getDerivative();
   private:
     int setPoint;
     float dt;
