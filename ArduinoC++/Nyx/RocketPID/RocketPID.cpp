@@ -26,7 +26,6 @@ RocketPID::RocketPID(int setPoint, float Kp, float Ki, float Kd){
 RocketPID::~RocketPID(){
 }
 
-
 float RocketPID::computePID(double input){
     //Compute error terms
     err = setPoint - input;
