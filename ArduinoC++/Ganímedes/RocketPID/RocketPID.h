@@ -21,6 +21,7 @@ class RocketPID{
     void setLimits(float lowerInput, float upperInput);
     void setDt(float dtInput);
     float clamp(float value);
+    float antiWindUp(float integrative, float lowerInput, float upperInput);
     float getSetPoint();
     float getDt();
     float getProportional();
