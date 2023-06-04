@@ -46,7 +46,7 @@ float RocketPID::computePID(double input){
     //Keep track of state
     lastInput = input;
     lastErr = err;
-return output;
+    return output;
 }
 
 void RocketPID::setLimits(float lowerInput, float upperInput){
@@ -63,7 +63,7 @@ float RocketPID::clamp(float value){
         return upper;
     if (value < lower)
         return lower;
-return value;
+    return value;
 }
 
 float RocketPID::antiWindUp(float integrative, float lowerInput, float upperInput){
