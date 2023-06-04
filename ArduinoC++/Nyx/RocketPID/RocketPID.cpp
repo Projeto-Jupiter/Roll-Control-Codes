@@ -19,8 +19,8 @@ RocketPID::RocketPID(int setPoint, float Kp, float Ki, float Kd){
     dt = 0.01;
     lastInput = 0.0;
     lastErr = 0.0;
-    lower = -8.0;
-    upper = 8.0;
+    lower = -8.0 * 3.1416/180;
+    upper = 8.0 * 3.1416/180;
 }
 
 RocketPID::~RocketPID(){
