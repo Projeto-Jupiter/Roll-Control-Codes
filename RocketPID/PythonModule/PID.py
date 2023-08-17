@@ -31,19 +31,14 @@ class PID:
         self.lower_limit = lower_limit * 3.1416 / 180  # Convert to radians
         self.upper_limit = upper_limit * 3.1416 / 180  # Convert to radians
         self.differential_on_measurement = differential_on_measurement
-        self.error = 0
-        self.integral = 0
-        self.derivative = 0
-        self.previous_error = 0
-        self.output = 0
-        self.time = 0
-        self.previous_time = 0
+        self.last_input = 0
+        self.last_error = 0
 
     def __call__(self, input):
         """Computes the PID output based on the input."""
         error = self.set_point - input
-        d_input = input - last_input
-        d_error = error - last_err
+        d_input = input - self.last_input
+        d_error = error - self.last_error
 
         # Compute the proportional term
         proportional = self.kp * error
@@ -66,8 +61,8 @@ class PID:
         output = self.clamp(output)
 
         # Keep track of state
-        last_input = input
-        last_err = error
+        self.last_input = input
+        self.last_error = error
         return output
 
     def clamp(self, value):
