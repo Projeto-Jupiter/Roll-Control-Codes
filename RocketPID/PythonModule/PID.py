@@ -33,6 +33,9 @@ class PID:
         self.differential_on_measurement = differential_on_measurement
         self.last_input = 0
         self.last_error = 0
+        self.proportional = 0
+        self.integrative = 0
+        self.derivative = 0
 
     def __call__(self, input):
         """Computes the PID output based on the input."""
@@ -41,23 +44,23 @@ class PID:
         d_error = error - self.last_error
 
         # Compute the proportional term
-        proportional = self.kp * error
+        self.proportional = self.kp * error
 
         # Compute integrative and derivative terms
-        integrative += self.ki * error * self.dt
-        integrative = self.anti_wind_up(
-            integrative,
+        self.integrative += self.ki * error * self.dt
+        self.integrative = self.anti_wind_up(
+            self.integrative,
             self.lower_limit * 180 / 3.1416,  # Convert to degrees
             self.upper_limit * 180 / 3.1416,  # Convert to degrees
         )  # Avoid integrative windup (-lowerInput, +upperInput)
 
         if self.differential_on_measurement:
-            derivative = -self.kd * d_input / self.dt
+            self.derivative = -self.kd * d_input / self.dt
         else:
-            derivative = self.kd * d_error / self.dt
+            self.derivative = self.kd * d_error / self.dt
 
         # Compute final output
-        output = proportional + integrative + derivative
+        output = self.proportional + self.integrative + self.derivative
         output = self.clamp(output)
 
         # Keep track of state
