@@ -1,2 +1,0 @@
-EnableFunction	KEYWORD1
-addAcceleration	KEYWORD2

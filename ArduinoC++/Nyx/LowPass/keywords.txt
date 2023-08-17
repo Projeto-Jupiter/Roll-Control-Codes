@@ -1,2 +1,0 @@
-LowPass	KEYWORD1
-addData	KEYWORD2

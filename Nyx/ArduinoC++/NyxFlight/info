@@ -1,0 +1,4 @@
+csv com os dados do lançamento do Nyx em Pirassununga. (04/03/2023)
+o periodo é dado em ms, os dados Raw axyz devem ser divididos por 2048 enquanto os valores Raw gxyz deve ser divididos
+por 16.4, lastCantAngle é definida em graus
+e deve variar entre -8 e 8 graus. Por fim, altitude é dado em metros e deve ser dividido por 10 para se obter os dados reais.
